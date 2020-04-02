@@ -35,7 +35,7 @@ def readSegmentation(filePath):
         with open(filePath, "r") as f:
             segmentations = json.load(f)
         for segment in segmentations:
-            seg = Segment(**segment)
+            seg = Segment.parse_obj(segment)
             result.append(seg)
         return result
     except FileNotFoundError as e:
