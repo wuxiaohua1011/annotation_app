@@ -109,13 +109,9 @@ class Scene(scene.SceneCanvas):
         self.view.camera = self.camera_mode
 
     def on_mouse_release(self, event):
-        print("DEBUG: Mouse Release detected")
         if event.button == 1 and distance_traveled(event.trail()) <= 2:
-            print("DEBUG: Point click detected")
             try:
-                print("entered try")
                 selected_point_coord = self.findClickingCoord(event)
-                print(selected_point_coord)
                 if len(selected_point_coord) > 0:
                     selected_point_id = self.findPointIDFromClick(
                         selected_point_coord, 1
