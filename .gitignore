@@ -1,0 +1,13 @@
+.ipynb_checkpoints
+*.py[co]
+__pycache__
+.DS_Store
+.vscode/*
+.idea/
+/build
+/dist
+*.ply
+.pytest_cache
+venv/
+/ATLAS.egg-info
+.mypy_cache
