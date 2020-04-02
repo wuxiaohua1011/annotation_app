@@ -1,7 +1,7 @@
 from controller.config import DEFAULT_STYLE_SHEET_LOCATION, DEFAULT_SEGMENTATION_FILE_LOCATION, \
     DEFAULT_SCENE_FILE_LOCATION
 from PyQt5 import QtWidgets  # type: ignore
-from PyQt5.QtWidgets import QApplication, QListWidgetItem # type: ignore
+from PyQt5.QtWidgets import QApplication, QListWidgetItem  # type: ignore
 from view.planefitting_ui import Ui_planefitting_main_window
 import sys
 from controller.utilities.atlas_annotation_tool_util import Scene
@@ -10,6 +10,7 @@ from typing import List
 from controller.utilities.models import Segment
 from controller.utilities.planefitting_utility import PlaneFittingUtil
 from PyQt5 import QtCore
+
 
 class PlaneFitting(QtWidgets.QMainWindow):
     def __init__(self,
@@ -60,7 +61,6 @@ class PlaneFitting(QtWidgets.QMainWindow):
             check_box.setFlags(check_box.flags() | QtCore.Qt.ItemIsUserCheckable)
             check_box.setCheckState(QtCore.Qt.Unchecked)
             self.ui.segment_list.addItem(check_box)
-
 
 
 if __name__ == "__main__":
