@@ -8,7 +8,7 @@ Project ATLAS is an attempt to carry out a large scale and accurate mapping of U
 First clone the project
 `git clone https://github.com/wuxiaohua1011/annotation_app.git && cd annotation_app`
 
-Create a virtual environment, we recommend with `Python 3.6`
+Create a virtual environment, we recommend with `Python 3.6`. Python Version has to `>= 3.6`
 
 `conda create -n myenv python=3.6`
 
