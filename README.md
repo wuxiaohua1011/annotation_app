@@ -6,7 +6,7 @@ Project ATLAS is an attempt to carry out a large scale and accurate mapping of U
 
 ## Getting Started
 First clone the project
-`git clone https://github.com/oafolabi/ATLAS_annotation_tools.git && cd ATLAS_annotation_tools`
+`git clone https://github.com/wuxiaohua1011/annotation_app.git && cd annotation_app`
 
 Create a virtual environment, we recommend with `Python 3.6`
 
@@ -25,6 +25,10 @@ Install a distribution of the app
 Run the main app
 
 `python main.py`
+
+Note: You should download data before start annotating. You can download data by going into the `Download/Upload` screen.
+
+
 
 ## Developers
 Please first download Qt Designer, if you are going to do any thing related to GUI

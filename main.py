@@ -10,10 +10,7 @@ segmentation_file_path = "./data/segment.json"
 app = QApplication(sys.argv)
 
 w = MainWindow(
-    app,
-    style_sheet_location=style_sheet_location,
-    data_location=data_location,
-    segmentation_file_path=segmentation_file_path,
+    app
 )
 app.exec_()
 

@@ -19,8 +19,8 @@ def test_window_initial_semantics(qtbot):
     app = QApplication(sys.argv)
     w = AtlasAnnotationAppWindow(
         app,
-        style_sheet_location=style_sheet_location,
-        data_location=data_location,
+        style_sheet_path=style_sheet_location,
+        scene_file_path=data_location,
         segmentation_file_path=segmentation_file_location,
     )
     qtbot.addWidget(w)
