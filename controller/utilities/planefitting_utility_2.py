@@ -2,11 +2,14 @@ import open3d as o3d
 import numpy as np
 import trimesh
 import json
+
+from open3d.open3d.geometry import TriangleMesh
+
 from controller.utilities.floodfill_utility import *
 from controller.utilities.models import *
 from controller.config import DEFAULT_SCENE_FILE_PATH, DEFAULT_SEGMENTATION_FILE_PATH
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple
 from controller.utilities.atlas_annotation_tool_util import *
 
 
@@ -42,53 +45,65 @@ class PlaneFittingUtil:
         )
         self.line_set.colors = o3d.utility.Vector3dVector(colors)
 
-    # handle json file, return a list of segment objects
-    # print(data[0].keys())
-    # dict_keys(['id', 'data_file_name', 'segment_name', 'indices', 'type', 'type_class', 'intersection', 'plane_equation', 'vertices'])
-    def handle_json(self, segmentation_file_location: Path = DEFAULT_SEGMENTATION_FILE_PATH):
-        to_display = [self.orientedBoundingBox, self.pcd]
-        segment_list = []
-        with open(segmentation_file_location.as_posix()) as f:
-            data = json.load(f)
-        for seg in data:
-            surface_to_crop = seg['indices']
-            mesh, n, d = self.crop_plane_bbox(surface_to_crop)
-            data = dict(
-                id=seg['id'],
-                data_file_name=seg['data_file_name'],
-                segment_name=seg['segment_name'],
-                indices=surface_to_crop,
-                type=seg['type'],
-                type_class=seg['type_class'],
-                intersection=[],  # b/c we are using the json file generated from old Segment class
-                geometry=Plane(cad_model=mesh, equation=(n, d)),
-                vertices=seg['vertices']
-            )
-            segment_list.append(Segment(**data))
+    def auto_clip_segments(self,
+                           segments: Union[Path, List[Segment]] = DEFAULT_SEGMENTATION_FILE_PATH) -> \
+            Tuple[List[Segment], o3d.geometry.OrientedBoundingBox, o3d.geometry.PointCloud]:
+        """
+        1. Parse the JSON file and read in the segements
+        2. generate mesh for all segments
+        3. clip mesh against each other
 
-        for segment in segment_list:
-            self.crop_plane(to_display, segment, segment_list)
+        Args:
+            segments: List of Segments or file path to json of a list of segment
 
-        # # display
-        # o3d.visualization.draw_geometries(to_display)
-        return segment_list, (self.orientedBoundingBox, self.pcd)
+        Returns:
 
-    # crop a plane according to the surface_to_crop and return the mesh object and 3d points
-    def crop_plane_bbox(self, surface_to_crop):
+        """
+
+        # first read in segments
+        if isinstance(segments, Path):
+            segments = readSegmentation(segments)  # turn segments into a List[Segment]
+        # then generate mesh for all segments
+        for seg in segments:
+            surface_to_crop = seg.indices
+            if len(surface_to_crop) == 0:
+                continue
+            mesh, n, d = self.crop_plane_bbox(surface_to_crop=surface_to_crop)
+            seg.intersection = []
+            seg.geometry = Plane(cad_model=mesh, equation=(n, d))
+        # then clip each segment mesh against all other segments'
+        for seg in segments:
+            self.crop_plane(target=seg, planes=segments)
+
+        return segments, self.orientedBoundingBox, self.pcd
+
+    def crop_plane_bbox(self, surface_to_crop: List[int]) -> \
+            Tuple[TriangleMesh, List[float], float]:
+        """
+        crop a plane according to the surface_to_crop and return the mesh object and 3d plane equation
+        Args:
+            surface_to_crop: list of integer representing the indices of in the pcd that should be cropped out
+
+        Returns:
+            mesh -> the cropped mesh resulting from taking surface_to_crop from self.pcd
+            n, d -> plane equation resulting from o3d.PointCloud.segment_plane function
+        """
         points = np.asarray(self.pcd_copy.points)[surface_to_crop]  # convert index to real points and index error here
         seg = o3d.geometry.PointCloud()
         seg.points = o3d.utility.Vector3dVector(points)
 
-        tuple = seg.segment_plane(0.1, 3, 10)
-        n = tuple[0][:-1]
+        segmented_plane = seg.segment_plane(0.1, 3, 10)
+        segmented_plane_equation = segmented_plane[0]
+        n: List[float] = segmented_plane_equation[:-1]
         n /= np.linalg.norm(n)
-        d = tuple[0][-1]
+        d: float = segmented_plane_equation[-1]
         a = [-n[1], n[0], 0]
         a /= np.linalg.norm(a)
         b = np.cross(n, a)
         b /= np.linalg.norm(b)
         r = get_r(n)
         r = r.T
+
 
         vertices = np.array([
             [-0.5, 0.5, 0],
@@ -104,7 +119,6 @@ class PlaneFittingUtil:
         ])
 
         vertices = [np.matmul(v, r) - np.multiply(n, d) for v in vertices]
-
         mesh = o3d.geometry.TriangleMesh()
         mesh.vertices = o3d.utility.Vector3dVector(np.asarray(vertices))
         mesh.triangles = o3d.utility.Vector3iVector(np.asarray(triangles))
@@ -117,10 +131,20 @@ class PlaneFittingUtil:
         trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[6], self.normal_list[6])
         mesh.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         mesh.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
-        # to_display.append(mesh) # mesh is a CAD model, plane equation, indices of points
         return mesh, list(n), d
 
-    def crop_plane(self, to_display, target, planes):
+    def crop_plane(self, target: Segment, planes: List[Segment]):
+        """
+        clip target against all other plane in planes.
+        Note: this function will modify target's cad_model field in place
+        Args:
+            target: the desired plane to be clipped
+            planes: all other planes used to clip target
+
+        Returns:
+            None
+
+        """
         old_mesh = target.geometry.cad_model
         trimesh_mesh = trimesh.Trimesh(vertices=np.asarray(old_mesh.vertices), faces=np.asarray(old_mesh.triangles))
         for plane in planes:
@@ -128,7 +152,6 @@ class PlaneFittingUtil:
                 trimesh_mesh = trimesh_mesh.slice_plane(self.pcd.points[plane.indices[0]], plane.geometry.equation[0])
         target.geometry.cad_model.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         target.geometry.cad_model.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
-        to_display.append(target.geometry.cad_model)
 
 
 # TODO: adding comments
@@ -169,3 +192,41 @@ def hat_operator(vector):
     matrix[2, 1] = w1
     return matrix
 
+
+def parseCurrSegmentText(value: str) -> Tuple[int, str]:
+    """
+    parse the CurrSegmentText
+    ex: value = ID: 0 | wall1
+    return: (0, wall1)
+    Args:
+        value:
+
+    Returns:
+        ID and name of the value
+    """
+    ID, name = value.split("|", maxsplit=1)
+    if name is None:
+        raise Exception("Unknown CurrSegmentText encountered --> [{}]".format(value))
+    try:
+        int(ID)
+    except ValueError:
+        raise Exception("Cannot convert ID [{}] to int ".format(ID))
+    return int(ID), name
+
+
+def findSegment(ID: int, name: str, segments: List[Segment]) -> Union[Segment, None]:
+    """
+    Use ID and name to find segemnt in a list of segments
+    Args:
+        ID: integer representing the ID of a segment
+        name: name of the segement
+        segments: list of segement to find
+
+    Returns:
+        None if does not exist
+        segment if found
+    """
+    for seg in segments:
+        if seg.id == ID:
+            return seg
+    return None

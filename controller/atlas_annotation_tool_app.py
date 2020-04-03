@@ -11,20 +11,21 @@ from controller.utilities.floodfill_utility import floodfill, crop_reserve
 from controller.utilities.boundingbox_utility import BBOX, Line
 from controller.utilities.models import Segment
 import vispy  # type: ignore
+from controller.config import *
 
 
 class AtlasAnnotationAppWindow(QDialog):
     def __init__(
-        self,
-        app: QApplication,
-        segmentation_file_path: str = "../data/segment.json",
-        style_sheet_location: str = "../model/layout/MaterialDark.qss",
-        data_location: str = "../data/scene.ply",
-        show: bool = True,
+            self,
+            app: QApplication,
+            segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
+            style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
+            scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
+            show: bool = True,
     ):
         super().__init__()
         self.app = app
-        self.app.setStyleSheet(open(style_sheet_location).read())
+        self.app.setStyleSheet(open(style_sheet_path.as_posix()).read())
         self.ui = Ui_annotation_app()
         self.ui.setupUi(self)
 
@@ -40,7 +41,7 @@ class AtlasAnnotationAppWindow(QDialog):
         self.populateSegmentList()
 
         ## DEMO
-        self.upperScene.render_mesh(fname=data_location)
+        self.upperScene.render_mesh(fname=scene_file_path)
 
         self.setupCanvas()
         self.setListener()
@@ -172,8 +173,8 @@ class AtlasAnnotationAppWindow(QDialog):
             # assume that the state of the program should have existing segments all read in from file
             # from initializing the program.
             if (
-                len(self.upperScene.selected_point_ids) == 0
-                and self.currentSystemMode == 0
+                    len(self.upperScene.selected_point_ids) == 0
+                    and self.currentSystemMode == 0
             ):
                 self.writeMessage("There are no points to save")
             else:
@@ -207,7 +208,7 @@ class AtlasAnnotationAppWindow(QDialog):
             selected_segment = self.segments[current_item_index]
 
             self.upperScene.render_mesh(
-                fname=selected_segment.data_file_name,
+                fname=Path(selected_segment.data_file_name),
                 indices_to_highlight=selected_segment.indices,
                 autoclear=True,
             )

@@ -19,20 +19,20 @@ from PyQt5.QtWidgets import (  # type: ignore
     QLabel,
     QFileDialog,
 )  # type: ignore
+from pathlib import Path
 
 system_modes = {0: "floodfill", 1: "boundingbox"}
 
 
-def readSegmentation(filePath):
+def readSegmentation(filePath: Path) -> List[Segment]:
     """
     Read Segmentation from filePath
     :param filePath:
     :return: list of segments
     """
-
     try:
         result = []
-        with open(filePath, "r") as f:
+        with open(filePath.as_posix(), "r") as f:
             segmentations = json.load(f)
         for segment in segmentations:
             seg = Segment.parse_obj(segment)
@@ -42,6 +42,9 @@ def readSegmentation(filePath):
         raise FileNotFoundError(
             "Given [{}] is not read in successfully.".format(filePath)
         )
+    except UnicodeDecodeError as e:
+        print("File [{}] cannot be read succesfully")
+        raise e
 
 
 class Scene(scene.SceneCanvas):
@@ -59,16 +62,16 @@ class Scene(scene.SceneCanvas):
         self.mesh: o3d.geometry.TriangleMesh = None
         self.pcd_fname = None
 
-    def render_mesh(self, fname: str = None, autoclear=False, indices_to_highlight=[]):
+    def render_mesh(self, fname: Path = None, autoclear=False, indices_to_highlight=[]):
         if autoclear:
             self.clear()
         mesh = None
         if fname is None:
             mesh = copy.deepcopy(self.mesh)
         else:
-            mesh = o3d.io.read_triangle_mesh(fname)
+            mesh = o3d.io.read_triangle_mesh(fname.as_posix())
             self.mesh = mesh
-            self.pcd_fname = fname
+            self.pcd_fname = fname.as_posix()
             self.pcd = mesh_to_pointcloud(mesh)
         if len(indices_to_highlight) != 0:
             color = np.asarray(mesh.vertex_colors)
