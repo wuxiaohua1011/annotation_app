@@ -1,15 +1,11 @@
-from controller.config import DEFAULT_STYLE_SHEET_PATH, DEFAULT_SEGMENTATION_FILE_PATH, \
-    DEFAULT_SCENE_FILE_PATH
 from PyQt5 import QtWidgets  # type: ignore
 from PyQt5.QtWidgets import QApplication, QListWidgetItem  # type: ignore
-from view.planefitting_ui import Ui_planefitting_main_window
-import sys
-from pathlib import Path
-from typing import List, Tuple
-from controller.utilities.models import Segment
-from controller.utilities.planefitting_utility_2 import *
+from ATLAS.view.planefitting_ui import Ui_planefitting_main_window
 from PyQt5 import QtCore
-import open3d as o3d
+from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH, \
+    DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, DEFAULT_STYLE_SHEET_PATH
+from ATLAS.controller.utilities.planefitting_utility_2 \
+    import PlaneFittingUtil, Scene, findSegment, parseCurrSegmentText, getMeshesFromSegment
 
 
 class PlaneFitting(QtWidgets.QMainWindow):

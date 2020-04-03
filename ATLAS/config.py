@@ -3,7 +3,7 @@ Default static configuration for all applications
 """
 from pathlib import Path
 
-ROOT = Path("/Users/michaelwu/Desktop/projects/GD/ATLAS_annotation_tools")
+ROOT = Path("/Users/michaelwu/Desktop/projects/GD/ATLAS_annotation_tools")  # TODO: automatically find path here
 
 DEFAULT_STYLE_SHEET_PATH = ROOT / "model" / "layout" / "MaterialDark.qss"  # the default style sheet
 DEFAULT_SEGMENTATION_FILE_PATH = ROOT / "data" / "segment.json"  # refer to the default segment json file

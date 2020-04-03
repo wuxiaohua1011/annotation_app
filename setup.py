@@ -9,4 +9,9 @@ setup(
     author="FHL Vive Center",
     author_email="wuxiaohua1011@berkeley.edu",
     description="PointCloud Annotation and Segmentation Tool",
+    include_package_data=True,
+    package_data={
+            # If any package contains the following, include them:
+        '': ['*.config', '*.xml', '*.ini'],
+    }
 )

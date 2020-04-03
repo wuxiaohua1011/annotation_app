@@ -1,17 +1,11 @@
-import sys
-import os
-
-# Temporary fix for path
-sys.path.insert(0, os.path.dirname(os.getcwd()))
-
 from PyQt5.QtWidgets import QApplication  # type: ignore
-from view.AtlasAnnotationTool_UI import Ui_annotation_app
-from controller.utilities.atlas_annotation_tool_util import *
-from controller.utilities.floodfill_utility import floodfill, crop_reserve
-from controller.utilities.boundingbox_utility import BBOX, Line
-from controller.utilities.models import Segment
+from ATLAS.view.annotation_tool_ui import Ui_annotation_app
+from ATLAS.controller.utilities.atlas_annotation_tool_util import *
+from ATLAS.controller.utilities.floodfill_utility import floodfill, crop_reserve
+from ATLAS.controller.utilities.boundingbox_utility import BBOX, Line
+from ATLAS.controller.utilities.models import Segment
 import vispy  # type: ignore
-from controller.config import *
+from ATLAS.config import *
 
 
 class AtlasAnnotationAppWindow(QDialog):
@@ -25,7 +19,11 @@ class AtlasAnnotationAppWindow(QDialog):
     ):
         super().__init__()
         self.app = app
-        self.app.setStyleSheet(open(style_sheet_path.as_posix()).read())
+        try:
+            self.app.setStyleSheet(open(style_sheet_path.as_posix()).read())
+        except FileNotFoundError:
+            print("Cannot location file {}".format(style_sheet_path.as_posix()))
+            pass
         self.ui = Ui_annotation_app()
         self.ui.setupUi(self)
 

@@ -1,4 +1,4 @@
-from controller.utilities import floodfill_utility
+from ATLAS.controller.utilities import floodfill_utility
 import open3d as o3d
 import numpy as np
 import pytest

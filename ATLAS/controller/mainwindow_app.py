@@ -1,7 +1,10 @@
 from PyQt5 import QtWidgets  # type: ignore
-from view.MainWindow import Ui_MainWindow
-from controller.atlas_annotation_tool_app import *
-from controller.download_tool_app import DownloadToolWindow
+from PyQt5.QtWidgets import QApplication
+from ATLAS.view.mainwindow_ui import Ui_MainWindow
+from ATLAS.controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
+from ATLAS.controller.download_tool_app import DownloadToolWindow
+from ATLAS.config import DEFAULT_STYLE_SHEET_PATH
+from typing import List
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -12,6 +15,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         if "style_sheet_location" in kwargs.keys():
             self.app.setStyleSheet(open(str(kwargs.get("style_sheet_location"))).read())
+        else:
+            self.app.setStyleSheet(open(DEFAULT_STYLE_SHEET_PATH.as_posix()).read())
+
         self.kwargs = kwargs
 
         self.setListener()

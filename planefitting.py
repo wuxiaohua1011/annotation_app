@@ -1,9 +1,7 @@
-import open3d as o3d
-import numpy as np
 import trimesh
 import json
-from controller.utilities.floodfill_utility import *
-from controller.utilities.models import *
+from ATLAS.controller.utilities.floodfill_utility import *
+from ATLAS.controller.utilities.models import *
 
 # TODO: parse json file
 # TODO: find the intersection of planes

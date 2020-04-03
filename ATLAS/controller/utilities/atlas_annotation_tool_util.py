@@ -1,10 +1,5 @@
-import sys
-import os
-
-# Temporary fix for path
-sys.path.insert(0, os.path.dirname(os.getcwd()))
 import json
-from controller.utilities.models import *
+from ATLAS.controller.utilities.models import *
 from vispy import scene  # type: ignore
 import vispy  # type: ignore
 import copy

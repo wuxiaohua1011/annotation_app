@@ -1,13 +1,7 @@
-import open3d as o3d
-import numpy as np
 import trimesh
-import json
-from controller.utilities.floodfill_utility import *
-from controller.utilities.models import *
-from controller.config import DEFAULT_SCENE_FILE_PATH, DEFAULT_SEGMENTATION_FILE_PATH
-from pathlib import Path
+from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH
 from typing import Union
-from controller.utilities.atlas_annotation_tool_util import *
+from ATLAS.controller.utilities.atlas_annotation_tool_util import *
 
 
 class PlaneFittingUtil:

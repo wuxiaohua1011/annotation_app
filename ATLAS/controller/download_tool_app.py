@@ -1,11 +1,8 @@
 import sys
 import os
 
-# Temporary fix for path
-sys.path.insert(0, os.path.dirname(os.getcwd()))
-
-from view.DownloadTool_UI import Ui_download_tool
-from controller.utilities.endpoints import Atlas_api_fetcher
+from ATLAS.view.downloadtool_ui import Ui_download_tool
+from ATLAS.controller.utilities.endpoints import Atlas_api_fetcher
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtWidgets import QApplication
 

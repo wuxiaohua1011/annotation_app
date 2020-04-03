@@ -1,4 +1,4 @@
-from controller.utilities import atlas_annotation_tool_util
+from ATLAS.controller.utilities import atlas_annotation_tool_util
 import pytest
 
 

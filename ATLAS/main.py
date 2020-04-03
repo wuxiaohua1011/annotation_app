@@ -1,16 +1,12 @@
-from controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
-from controller.mainwindow_app import MainWindow
+from ATLAS.controller.mainwindow_app import MainWindow
 from PyQt5.QtWidgets import QApplication
 import sys
-
-style_sheet_location = "./model/layout/MaterialDark.qss"
-data_location = "./data/scene.ply"
-segmentation_file_path = "./data/segment.json"
 
 app = QApplication(sys.argv)
 
 w = MainWindow(
-    app
+    app,
+
 )
 app.exec_()
 

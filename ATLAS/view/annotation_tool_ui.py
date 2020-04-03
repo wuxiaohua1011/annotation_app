@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'AtlasAnnotationTool.ui'
+# Form implementation generated from reading ui file 'annotation_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #

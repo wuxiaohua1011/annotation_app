@@ -1,17 +1,10 @@
-import open3d as o3d
-import numpy as np
 import trimesh
-import json
 
 from open3d.open3d.geometry import TriangleMesh
-from vispy import scene # type: ignore
 
-from controller.utilities.floodfill_utility import *
-from controller.utilities.models import *
-from controller.config import DEFAULT_SCENE_FILE_PATH, DEFAULT_SEGMENTATION_FILE_PATH
-from pathlib import Path
-from typing import Union, Tuple, Dict
-from controller.utilities.atlas_annotation_tool_util import *
+from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH
+from typing import Union, Dict
+from ATLAS.controller.utilities.atlas_annotation_tool_util import *
 
 
 class PlaneFittingUtil:

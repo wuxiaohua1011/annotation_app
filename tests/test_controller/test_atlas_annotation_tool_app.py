@@ -4,7 +4,7 @@
 #####
 from PyQt5.QtWidgets import QApplication
 import sys
-from controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
+from ATLAS.controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
 import os
 import pathlib
 

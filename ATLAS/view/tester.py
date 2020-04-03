@@ -1,8 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtWidgets
 
-from view.MainWindow import Ui_MainWindow
+from ATLAS.view.mainwindow_ui import Ui_MainWindow
 
 app = QApplication(sys.argv)
 ex = Ui_MainWindow()
