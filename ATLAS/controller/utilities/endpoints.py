@@ -8,7 +8,8 @@ import os
 from urllib.parse import urljoin
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
-
+from pathlib import Path
+from ATLAS.config import DEFAULT_DATA_LOCATION
 # temporary location for base_url (for testing purpose)
 BASE_URL = "http://rejection.ocf.berkeley.edu:5000"
 
@@ -63,15 +64,15 @@ class Atlas_api_fetcher(object):
     progress: the Qt Progress Bar object
     """
 
-    def get_file(self, filename, progress, location="./"):
+    def get_file(self, filename: str, progress, location: Path = DEFAULT_DATA_LOCATION):
         route = "/files/" + filename
         resp = requests.get(BASE_URL + route)
         resp.raise_for_status()
 
-        local_name = "/".join([location, filename])
+        local_name = location / filename
 
         try:
-            with open(local_name, "wb") as f:
+            with open(local_name.as_posix(), "wb") as f:
                 progress.setMaximum(len(resp.content))
                 stream_size = 8192
                 loaded = 0
@@ -84,8 +85,8 @@ class Atlas_api_fetcher(object):
                         QApplication.processEvents()
 
         except (OSError, TypeError) as error:
-            if os.path.isfile(local_name):
-                os.remove(local_name)
+            if os.path.isfile(local_name.as_posix()):
+                os.remove(local_name.as_posix())
             return False
 
         return True

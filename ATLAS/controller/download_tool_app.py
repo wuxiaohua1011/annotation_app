@@ -5,6 +5,8 @@ from ATLAS.view.downloadtool_ui import Ui_download_tool
 from ATLAS.controller.utilities.endpoints import Atlas_api_fetcher
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtWidgets import QApplication
+from ATLAS.config import DEFAULT_DATA_LOCATION
+from pathlib import Path
 
 
 class DownloadToolWindow(QDialog):
@@ -18,9 +20,9 @@ class DownloadToolWindow(QDialog):
         self.file_to_upload = ""
         self.fetcher = Atlas_api_fetcher()
         # set data location
-        self.dataLoc = "/".join([os.getcwd(), "data"])
+        self.dataLoc: Path = DEFAULT_DATA_LOCATION
         # prepare for message box
-        self.write_message("Current download directory: " + self.dataLoc)
+        self.write_message("Current download directory: {}".format(self.dataLoc))
         self.ui.download_progress.setValue(0)
         self.ui.upload_progress.setValue(0)
         self.setListener()
