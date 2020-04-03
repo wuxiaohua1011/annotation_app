@@ -4,12 +4,13 @@ import trimesh
 import json
 
 from open3d.open3d.geometry import TriangleMesh
+from vispy import scene # type: ignore
 
 from controller.utilities.floodfill_utility import *
 from controller.utilities.models import *
 from controller.config import DEFAULT_SCENE_FILE_PATH, DEFAULT_SEGMENTATION_FILE_PATH
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Union, Tuple, Dict
 from controller.utilities.atlas_annotation_tool_util import *
 
 
@@ -104,7 +105,6 @@ class PlaneFittingUtil:
         r = get_r(n)
         r = r.T
 
-
         vertices = np.array([
             [-0.5, 0.5, 0],
             [0.5, 0.5, 0],
@@ -153,6 +153,31 @@ class PlaneFittingUtil:
         target.geometry.cad_model.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         target.geometry.cad_model.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
 
+
+def getMeshesFromSegment(segment: Segment) -> Dict[str, o3d.geometry.TriangleMesh]:
+    """
+    Takes a segment, return meshes that it represent
+    1. The mesh that can be red from data_file_name
+    2. cad_model
+    Args:
+        segment:
+
+    Returns:
+        Dictionary of  NAME -> Mesh
+        ex:
+        {
+            "base": BASE_MESH
+            "cad_model": CAD_MODEL_MESH
+        }
+
+    """
+    result: Dict[str, o3d.geometry.TriangleMesh] = dict()
+    if segment.data_file_name:
+        base = o3d.io.read_triangle_mesh(segment.data_file_name)
+        result["base"] = base
+    if segment.geometry and segment.geometry.cad_model:
+        result["cad_model"] = segment.geometry.cad_model
+    return result
 
 # TODO: adding comments
 def get_r(n):
@@ -230,3 +255,73 @@ def findSegment(ID: int, name: str, segments: List[Segment]) -> Union[Segment, N
         if seg.id == ID:
             return seg
     return None
+
+
+class Scene(scene.SceneCanvas):
+    def __init__(self):
+        scene.SceneCanvas.__init__(self, keys="interactive", size=(800, 800))
+        self.unfreeze()
+        self.camera_mode = "turntable"
+        self.view = self.setView()
+        self.point_size = 3.5
+        self.meshes: List[o3d.geometry.TriangleMesh] = []
+
+    def setView(self):
+        """
+        initialize the current view
+        Returns:
+            current view
+
+        """
+        view = self.central_widget.add_view()
+        view.camera = self.camera_mode
+        return view
+
+    def clearView(self):
+        """
+        clear the current view
+        Returns:
+
+        """
+        self.central_widget.remove_widget(self.view)
+        self.view = self.central_widget.add_view()
+
+    def render_mesh(self):
+        """
+        render all meshes in self.meshes
+
+        Returns:
+            None
+        """
+        for mesh in self.meshes:
+            if mesh.is_empty():
+                continue
+            points = np.asarray(mesh.vertices)
+            faces = np.asarray(
+                mesh.triangles
+            )  # nx3 array of ints each element is the index of point in the triangle
+            # create scatter object and fill in the data
+            scatter = scene.visuals.Mesh(
+                vertices=points, faces=faces, vertex_colors=mesh.vertex_colors
+            )
+            self.view.add(scatter)
+
+    def setMeshes(self, meshes: List[o3d.geometry.TriangleMesh]):
+        self.meshes = meshes
+
+    def clear(self):
+        """
+        clear the current view
+        clear meshes
+        reset self.view
+        Returns:
+            None
+        """
+        self.clearView()
+        self.meshes.clear()
+        self.view = self.setView()
+
+
+    def on_mouse_release(self, event):
+        if event.button == 1 and distance_traveled(event.trail()) <= 2:
+            print("Mouse Released")

@@ -4,7 +4,6 @@ from PyQt5 import QtWidgets  # type: ignore
 from PyQt5.QtWidgets import QApplication, QListWidgetItem  # type: ignore
 from view.planefitting_ui import Ui_planefitting_main_window
 import sys
-from controller.utilities.atlas_annotation_tool_util import Scene
 from pathlib import Path
 from typing import List, Tuple
 from controller.utilities.models import Segment
@@ -52,7 +51,10 @@ class PlaneFitting(QtWidgets.QMainWindow):
         selected_segment = findSegment(ID, name, self.segments)
         if selected_segment is None:
             self.writeMessage("ERROR: Cannot find segment with {}".format(value))
-        self.scene.render_mesh(Path(selected_segment.data_file_name))
+        meshes = getMeshesFromSegment(segment=selected_segment)
+        self.scene.setMeshes(list(meshes.values()))
+        self.scene.render_mesh()
+        # self.scene.render_mesh(Path(selected_segment.data_file_name))
         self.writeMessage("{} rendered".format(value))
 
     def populateCurrSegmentDropDown(self):
