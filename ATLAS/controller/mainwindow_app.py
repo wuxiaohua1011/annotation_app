@@ -4,25 +4,19 @@ from ATLAS.view.mainwindow_ui import Ui_MainWindow
 from ATLAS.controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
 from ATLAS.controller.download_tool_app import DownloadToolWindow
 from ATLAS.config import DEFAULT_STYLE_SHEET_PATH
+from ATLAS.controller.utilities.utility import BaseWindow
 from typing import List
+from pathlib import Path
 
 
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, app: QApplication, **kwargs):
-        super().__init__()
-        self.app = app
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        if "style_sheet_location" in kwargs.keys():
-            self.app.setStyleSheet(open(str(kwargs.get("style_sheet_location"))).read())
-        else:
-            self.app.setStyleSheet(open(DEFAULT_STYLE_SHEET_PATH.as_posix()).read())
-
-        self.kwargs = kwargs
-
-        self.setListener()
+class MainWindow(BaseWindow):
+    def __init__(self,
+                 app: QApplication,
+                 style_sheet_location: Path = DEFAULT_STYLE_SHEET_PATH,
+                 **kwargs):
+        super().__init__(app=app, UI=Ui_MainWindow, style_sheet_location=style_sheet_location)
         self.dialogs: List = list()
-        self.show()
+        self.kwargs = kwargs
 
     def setListener(self):
         self.ui.btn_annotate.clicked.connect(self.btn_annotate_clicked)
@@ -45,10 +39,3 @@ class MainWindow(QtWidgets.QMainWindow):
     # rewires annotation_app's closing event
     def app_close_event(self, close_event):
         self.show()
-        # self.dialogs[-1]
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    w = MainWindow(app)
-    app.exec_()

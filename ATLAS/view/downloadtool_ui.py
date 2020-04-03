@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'download_tool.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,11 +11,18 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_download_tool(object):
-    def setupUi(self, BrowseDialog):
-        BrowseDialog.setObjectName("BrowseDialog")
-        BrowseDialog.resize(402, 531)
-        self.io_panel = QtWidgets.QTabWidget(BrowseDialog)
-        self.io_panel.setGeometry(QtCore.QRect(0, 0, 401, 531))
+    def setupUi(self, download_tool):
+        download_tool.setObjectName("download_tool")
+        download_tool.resize(935, 681)
+        self.centralwidget = QtWidgets.QWidget(download_tool)
+        self.centralwidget.setObjectName("centralwidget")
+        self.io_panel = QtWidgets.QTabWidget(self.centralwidget)
+        self.io_panel.setGeometry(QtCore.QRect(220, 30, 401, 531))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.io_panel.sizePolicy().hasHeightForWidth())
+        self.io_panel.setSizePolicy(sizePolicy)
         self.io_panel.setObjectName("io_panel")
         self.Download = QtWidgets.QWidget()
         self.Download.setObjectName("Download")
@@ -64,29 +71,48 @@ class Ui_download_tool(object):
         self.upload_msg_box.setGeometry(QtCore.QRect(20, 180, 361, 301))
         self.upload_msg_box.setObjectName("upload_msg_box")
         self.io_panel.addTab(self.Upload, "")
+        download_tool.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(download_tool)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 935, 22))
+        self.menubar.setObjectName("menubar")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuEdit = QtWidgets.QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
+        download_tool.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(download_tool)
+        self.statusbar.setObjectName("statusbar")
+        download_tool.setStatusBar(self.statusbar)
+        self.actionOpen = QtWidgets.QAction(download_tool)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionSave = QtWidgets.QAction(download_tool)
+        self.actionSave.setObjectName("actionSave")
+        self.actionSave_As = QtWidgets.QAction(download_tool)
+        self.actionSave_As.setObjectName("actionSave_As")
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSave_As)
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
 
-        self.retranslateUi(BrowseDialog)
-        self.io_panel.setCurrentIndex(1)
-        QtCore.QMetaObject.connectSlotsByName(BrowseDialog)
+        self.retranslateUi(download_tool)
+        self.io_panel.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(download_tool)
 
-    def retranslateUi(self, BrowseDialog):
+    def retranslateUi(self, download_tool):
         _translate = QtCore.QCoreApplication.translate
-        BrowseDialog.setWindowTitle(_translate("BrowseDialog", "Dialog"))
-        self.download_browse_btn.setText(_translate("BrowseDialog", "Browse"))
-        self.download_confirm_btn.setText(_translate("BrowseDialog", "Download"))
-        self.download_cancel_btn.setText(_translate("BrowseDialog", "Cancel"))
-        self.io_panel.setTabText(
-            self.io_panel.indexOf(self.Download), _translate("BrowseDialog", "Download")
-        )
-        self.label.setText(
-            _translate(
-                "BrowseDialog",
-                '<html><head/><body><p><span style=" font-size:18pt; font-weight:600; ">Choose a file to upload</span></p></body></html>',
-            )
-        )
-        self.upload_browse_btn.setText(_translate("BrowseDialog", "Browse"))
-        self.upload_confirm_btn.setText(_translate("BrowseDialog", "Upload"))
-        self.upload_cancel_btn.setText(_translate("BrowseDialog", "Cancel"))
-        self.io_panel.setTabText(
-            self.io_panel.indexOf(self.Upload), _translate("BrowseDialog", "Upload")
-        )
+        download_tool.setWindowTitle(_translate("download_tool", "MainWindow"))
+        self.download_browse_btn.setText(_translate("download_tool", "Browse"))
+        self.download_confirm_btn.setText(_translate("download_tool", "Download"))
+        self.download_cancel_btn.setText(_translate("download_tool", "Cancel"))
+        self.io_panel.setTabText(self.io_panel.indexOf(self.Download), _translate("download_tool", "Download"))
+        self.label.setText(_translate("download_tool", "<html><head/><body><p><span style=\" font-size:18pt; font-weight:600; \">Choose a file to upload</span></p></body></html>"))
+        self.upload_browse_btn.setText(_translate("download_tool", "Browse"))
+        self.upload_confirm_btn.setText(_translate("download_tool", "Upload"))
+        self.upload_cancel_btn.setText(_translate("download_tool", "Cancel"))
+        self.io_panel.setTabText(self.io_panel.indexOf(self.Upload), _translate("download_tool", "Upload"))
+        self.menuFile.setTitle(_translate("download_tool", "File"))
+        self.menuEdit.setTitle(_translate("download_tool", "Edit"))
+        self.actionOpen.setText(_translate("download_tool", "Open"))
+        self.actionSave.setText(_translate("download_tool", "Save"))
+        self.actionSave_As.setText(_translate("download_tool", "Save As"))

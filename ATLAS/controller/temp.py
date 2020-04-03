@@ -1,27 +1,22 @@
-from PyQt5.QtWidgets import QApplication  # type: ignore
-from ATLAS.view.annotation_tool_ui import Ui_annotation_app
-from ATLAS.controller.utilities.atlas_annotation_tool_util import *
-from ATLAS.controller.utilities.floodfill_utility import floodfill, crop_reserve
-from ATLAS.controller.utilities.boundingbox_utility import BBOX, Line
-from ATLAS.controller.utilities.models import Segment
-import vispy  # type: ignore
-from ATLAS.config import DEFAULT_STYLE_SHEET_PATH, DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, \
-    DEFAULT_SEGMENTATION_FILE_PATH
-from ATLAS.controller.utilities.utility import BaseWindow
+class AtlasAnnotationAppWindow(QDialog):
+    def __init__(
+            self,
+            app: QApplication,
+            segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
+            style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
+            scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
+            show: bool = True,
+    ):
+        super().__init__()
+        self.app = app
+        try:
+            self.app.setStyleSheet(open(style_sheet_path.as_posix()).read())
+        except FileNotFoundError:
+            print("Cannot location file {}".format(style_sheet_path.as_posix()))
+            pass
+        self.ui = Ui_annotation_app()
+        self.ui.setupUi(self)
 
-
-class AtlasAnnotationAppWindow(BaseWindow):
-    def __init__(self,
-                 app: QApplication,
-                 segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
-                 style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
-                 scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
-                 show: bool = True
-                 ):
-        super().__init__(app=app,
-                         UI=Ui_annotation_app,
-                         style_sheet_location=style_sheet_path,
-                         show=show)
         self.segmentation_file_path = segmentation_file_path
         self.messages = ["Program Started, UI Loaded"]  # list of strings
         self.segments: List[Segment] = []  # list of Segment objects
@@ -33,6 +28,17 @@ class AtlasAnnotationAppWindow(BaseWindow):
 
         self.populateSegmentList()
 
+        ## DEMO
+        self.upperScene.render_mesh(fname=scene_file_path)
+
+        self.setupCanvas()
+        self.setListener()
+        if show:
+            self.show()
+
+    """
+    Initializer functions
+    """
 
     def setListener(self):
         self.ui.btn_floodfill_done.clicked.connect(self.btn_floodfill_done_clicked)
