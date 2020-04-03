@@ -294,6 +294,7 @@ class Scene(scene.SceneCanvas):
             None
         """
         for mesh in self.meshes:
+            print("rendering mesh", mesh)
             if mesh.is_empty():
                 continue
             points = np.asarray(mesh.vertices)
@@ -302,7 +303,7 @@ class Scene(scene.SceneCanvas):
             )  # nx3 array of ints each element is the index of point in the triangle
             # create scatter object and fill in the data
             scatter = scene.visuals.Mesh(
-                vertices=points, faces=faces, vertex_colors=mesh.vertex_colors
+                vertices=points, faces=faces, vertex_colors= mesh.vertex_colors if mesh.has_vertex_colors() else None
             )
             self.view.add(scatter)
 
