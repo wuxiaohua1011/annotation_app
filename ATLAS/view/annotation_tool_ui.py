@@ -184,7 +184,7 @@ class Ui_annotation_app(object):
         self.menubar.addAction(self.menuEdit.menuAction())
 
         self.retranslateUi(annotation_app)
-        self.system_mode.setCurrentIndex(1)
+        self.system_mode.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(annotation_app)
 
     def retranslateUi(self, annotation_app):

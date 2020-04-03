@@ -317,5 +317,5 @@ class Scene(scene.SceneCanvas):
 
 
     def on_mouse_release(self, event):
-        if event.button == 1 and distance_traveled(event.trail()) <= 2:
+        if event.button == 1 and distanceTraveled(event.trail()) <= 2:
             print("Mouse Released")

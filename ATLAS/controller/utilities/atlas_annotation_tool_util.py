@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import (  # type: ignore
     QFileDialog,
 )  # type: ignore
 from pathlib import Path
+from ATLAS.controller.utilities.utility import BaseScene
+from typing import Union
 
 system_modes = {0: "floodfill", 1: "boundingbox"}
 
@@ -42,72 +44,56 @@ def readSegmentation(filePath: Path) -> List[Segment]:
         raise e
 
 
-class Scene(scene.SceneCanvas):
-    def __init__(self):
-        scene.SceneCanvas.__init__(self, keys="interactive", size=(800, 800))
-        self.unfreeze()
-        self.camera_mode = "turntable"
-        self.pcd = None
-        self.marker = None
-        self.view = self.central_widget.add_view()
-        self.view.camera = self.camera_mode
+def highlightIndices(mesh: o3d.geometry.TriangleMesh,
+                     indices_to_highlight: List[int]) -> o3d.geometry.TriangleMesh:
+    """
+    Given a list of indicies, render the mesh with those indices to highlight
+    Args:
+        mesh: mesh that will be highlighted
+        indices_to_highlight: indices to highlight
+
+    Returns:
+        a mesh whose indices is highlighted
+    """
+    color = np.asarray(mesh.vertex_colors)
+    for i in indices_to_highlight:
+        color[i] = (0, 1, 0)
+    mesh.vertex_colors = o3d.utility.Vector3dVector(color)
+    return mesh
+
+
+class AnnotationScene(BaseScene):
+    """
+    Scene designed for AnnotationTool
+    1. Can keep track of the main mesh, which is defined to be the first mesh that this scene renders
+    2. keep track of selected_point_ids
+    3. renders points with indices to highlight
+    4. also keep track of the main data file ( aka where is the main mesh coming from)
+    """
+
+    def __init__(self, keys="interactive", size=(800, 800), point_size: float = 3.5):
+        super().__init__(keys=keys, size=size, point_size=point_size)
         self.selected_point_ids = []
-        self.point_size = 3.5
-        self.additional_elements = []
-        self.mesh: o3d.geometry.TriangleMesh = None
-        self.pcd_fname = None
+        self.main_mesh: o3d.geometry.TriangleMesh = o3d.geometry.TriangleMesh()
+        self.current_main_file_path: Union[Path, None] = None
 
-    def render_mesh(self, fname: Path = None, autoclear=False, indices_to_highlight=[]):
-        if autoclear:
-            self.clear()
-        mesh = None
-        if fname is None:
-            mesh = copy.deepcopy(self.mesh)
-        else:
-            mesh = o3d.io.read_triangle_mesh(fname.as_posix())
-            self.mesh = mesh
-            self.pcd_fname = fname.as_posix()
-            self.pcd = mesh_to_pointcloud(mesh)
-        if len(indices_to_highlight) != 0:
-            color = np.asarray(mesh.vertex_colors)
-            for i in indices_to_highlight:
-                color[i] = (0, 1, 0)
-            mesh.vertex_colors = o3d.utility.Vector3dVector(color)
-        self.render_helper(mesh)
+    def readMesh(self, fpath: Path, render=False, autoclear=False) -> o3d.geometry.TriangleMesh:
+        if self.main_mesh.is_empty():
+            self.current_main_file_path = fpath
+        return super(AnnotationScene, self).readMesh(fpath=fpath, render=render, autoclear=autoclear)
 
-    def render_helper(self, mesh):
-        points = np.asarray(mesh.vertices)
-        faces = np.asarray(
-            mesh.triangles
-        )  # nx3 array of ints each element is the index of point in the triangle
-
-        # create scatter object and fill in the data
-        scatter = scene.visuals.Mesh(
-            vertices=points, faces=faces, vertex_colors=mesh.vertex_colors
-        )
-        self.view.add(scatter)
-
-    def render_pcd(self, pcd, autoclear_view=True):
-        if autoclear_view:
-            self.clear()
-        points = np.asarray(pcd.points)
-        colors = np.asarray(pcd.colors)
-        self.marker = scene.visuals.Markers()
-        self.marker.set_gl_state("translucent", blend=True, depth_test=True)
-        self.marker.set_data(
-            points, edge_color=colors, face_color=colors, size=self.point_size
-        )
-        self.view.add(self.marker)
+    def renderMesh(self, mesh: o3d.geometry.TriangleMesh, autoclear: bool = False):
+        if self.main_mesh.is_empty():
+            self.main_mesh = mesh
+        super().renderMesh(mesh=mesh, autoclear=autoclear)
 
     def clear(self):
-        self.central_widget.remove_widget(self.view)
-        self.view = self.central_widget.add_view()
-        self.additional_elements = []
-        self.selected_point_ids = []
-        self.view.camera = self.camera_mode
+        super().clear()
+        self.selected_point_ids.clear()
+        self.main_mesh = o3d.geometry.TriangleMesh()
 
     def on_mouse_release(self, event):
-        if event.button == 1 and distance_traveled(event.trail()) <= 2:
+        if event.button == 1 and distanceTraveled(event.trail()) <= 2:
             try:
                 selected_point_coord = self.findClickingCoord(event)
                 if len(selected_point_coord) > 0:
@@ -118,7 +104,7 @@ class Scene(scene.SceneCanvas):
                     ]  # select only one point at a time
                     self.selected_point_ids.append(selected_point_id)
                 if len(self.selected_point_ids) == 2:
-                    points = np.asarray(self.mesh.vertices)
+                    points = np.asarray(self.main_mesh.vertices)
                     pt1 = points[self.selected_point_ids[0]]
                     pt2 = points[self.selected_point_ids[1]]
                     self.draw_line(pt1, pt2)
@@ -132,12 +118,12 @@ class Scene(scene.SceneCanvas):
         :param n: number of closest point to coord
         :return: return n closest point to coord
         """
-        pcd_tree = o3d.geometry.KDTreeFlann(self.mesh)
+        pcd_tree = o3d.geometry.KDTreeFlann(self.main_mesh)
         [k, idx, _] = pcd_tree.search_knn_vector_3d(coord, n)
         return [idx.pop() for i in range(n)]
 
     def findClickingCoord(self, event):
-        points = np.asarray(self.mesh.vertices)
+        points = np.asarray(self.main_mesh.vertices)
         # colors = np.asarray(pcd.colors)
         # axis = scene.visuals.XYZAxis(parent=self.upper.scene)
 
@@ -173,13 +159,13 @@ class Scene(scene.SceneCanvas):
 
         tmp_point = candidate_points[good_idx, 0:3]
         tmp_point = tmp_point[
-            np.newaxis, :
-        ]  # reshape it to fit it into marker.set_data
+                    np.newaxis, :
+                    ]  # reshape it to fit it into marker.set_data
 
         marker = scene.visuals.Markers()
         marker.set_gl_state("opaque", blend=False, depth_test=False)
         marker.set_data(tmp_point, edge_color="red", face_color="red", size=5.0)
-        self.view.add(marker)
+        self.addViewChild(marker)
 
         return tmp_point[0]  # since we are only selecting 1 point at a time
 
@@ -193,10 +179,10 @@ class Scene(scene.SceneCanvas):
             antialias=False,
         )
         line.set_gl_state("opaque", blend=False, depth_test=False)
-        self.view.add(line)
+        self.addViewChild(line)
 
 
-def mesh_to_pointcloud(open3d_mesh):
+def meshToPointcloud(open3d_mesh):
     """
     converting an open3d mesh to open3d pointcloud by
     taking all the verticies and colors and put them into an PointCloud structure
@@ -212,7 +198,7 @@ def mesh_to_pointcloud(open3d_mesh):
     return pcd
 
 
-def distance_traveled(positions):
+def distanceTraveled(positions):
     """
     Return the total amount of pixels traveled in a sequence of pixel
     `positions`, using Manhattan distances for simplicity.

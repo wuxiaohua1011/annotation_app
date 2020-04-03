@@ -1,6 +1,4 @@
 import sys
-import os
-
 from ATLAS.view.downloadtool_ui import Ui_download_tool
 from ATLAS.controller.utilities.endpoints import Atlas_api_fetcher
 from PyQt5.QtWidgets import QDialog, QFileDialog

@@ -38,13 +38,17 @@ class AtlasAnnotationAppWindow(BaseWindow):
         self.messages = ["Program Started, UI Loaded"]  # list of strings
         self.segments: List[Segment] = []  # list of Segment objects
         self.current_cropped_data: List = []
-        self.upperScene = Scene()
-        self.lowerScene = Scene()
+        self.upperScene = AnnotationScene()
+        self.lowerScene = AnnotationScene()
         self.currentSystemMode = -1
         self.system_mode_clicked()
 
         self.populateSegmentList()
         self.setupCanvas()
+
+        # demo
+        self.upperScene.readMesh(DEFAULT_SCENE_FILE_PATH, render=True)
+        print(self.upperScene.current_main_file_path)
 
     def setListener(self):
         self.ui.btn_floodfill_done.clicked.connect(self.btn_floodfill_done_clicked)
@@ -109,7 +113,8 @@ class AtlasAnnotationAppWindow(BaseWindow):
         if self.currentSystemMode == "UNKNOWN":
             print("ERR, system mode = -1 ")
         elif self.currentSystemMode == "boundingbox":
-            self.start_bbox()
+            if not self.upperScene.main_mesh.is_empty():
+                self.start_bbox()
         else:
             self.destroy_bbox()
 
@@ -138,11 +143,11 @@ class AtlasAnnotationAppWindow(BaseWindow):
         """
         if len(self.upperScene.selected_point_ids) == 1:
             print("One points detected, floodfilling")
-            pcd = mesh_to_pointcloud(self.upperScene.mesh)
+            pcd = meshToPointcloud(self.upperScene.main_mesh)
             surface_to_crop = floodfill(self.upperScene.selected_point_ids, pcd)
             self.current_cropped_data = surface_to_crop
-            new_pcd = crop_reserve(self.upperScene.pcd, surface_to_crop)
-            self.lowerScene.render_pcd(new_pcd)
+            new_pcd = crop_reserve(pcd, surface_to_crop)
+            self.lowerScene.renderPCD(new_pcd)
         elif len(self.upperScene.selected_point_ids) == 2:
             self.writeMessage(
                 "Two Points <{}> selected so far, instruction is unclear, abort".format(
@@ -151,11 +156,11 @@ class AtlasAnnotationAppWindow(BaseWindow):
             )
         elif len(self.upperScene.selected_point_ids) == 3:
             print("three points detected, floodfilling")
-            pcd = mesh_to_pointcloud(self.upperScene.mesh)
+            pcd = meshToPointcloud(self.upperScene.main_mesh)
             surface_to_crop = floodfill(self.upperScene.selected_point_ids, pcd)
             self.current_cropped_data = surface_to_crop
             new_pcd = crop_reserve(pcd, surface_to_crop)
-            self.lowerScene.render_pcd(new_pcd)
+            self.lowerScene.renderPCD(new_pcd)
         else:
             self.writeMessage(
                 "More than 3 points chosen, not implemented this functionality yet, please hit cancel to re-select"
@@ -171,8 +176,11 @@ class AtlasAnnotationAppWindow(BaseWindow):
         Returns:
             None
         """
-        self.upperScene.render_mesh(autoclear=True)
+        mesh = self.upperScene.main_mesh
+        self.upperScene.clear()
+        self.upperScene.renderMesh(mesh)
         self.current_cropped_data = []
+
 
     def btn_common_load_clicked(self):
         """
@@ -189,8 +197,8 @@ class AtlasAnnotationAppWindow(BaseWindow):
             relative_path = filename.replace(dirpath, ".")
             # self.current_data_file_name = relative_path  # TODO this might cause issue later on
             self.writeMessage("Opening file <{}>".format(filename))
-
-            self.upperScene.render_mesh(filename)
+            self.upperScene.clear()
+            self.upperScene.readMesh(fpath=Path(filename), render=True)
             self.current_cropped_data = []
 
     def btn_save_clicked(self):
@@ -209,7 +217,7 @@ class AtlasAnnotationAppWindow(BaseWindow):
             else:
                 new_seg = Segment(
                     id=len(self.segments),
-                    data_file_name=self.upperScene.pcd_fname,
+                    data_file_name=self.upperScene.current_main_file_path.as_posix(),  # TODO broken here
                     segment_name=response.get("seg_name"),
                     indices=self.current_cropped_data,
                     type_class=(response.get("type_class", "Unknown Class"), 1),
@@ -225,8 +233,8 @@ class AtlasAnnotationAppWindow(BaseWindow):
                 # can we just remove the bbox and floodfill markings instead and leave the rest
                 if self.currentSystemMode == 0:
                     self.lowerScene.clear()
-                    self.upperScene.selected_point_ids = []
-                    self.upperScene.render_mesh(autoclear=True)
+                    mesh = self.upperScene.main_mesh
+                    self.upperScene.renderMesh(mesh=mesh, autoclear=True)
                 self.writeMessage("Data Saved")
                 self.current_cropped_data = []
 
@@ -235,18 +243,13 @@ class AtlasAnnotationAppWindow(BaseWindow):
         try:
             current_item_index = int(current_item_text.split(" | ")[0])
             selected_segment = self.segments[current_item_index]
-
-            self.upperScene.render_mesh(
-                fname=Path(selected_segment.data_file_name),
-                indices_to_highlight=selected_segment.indices,
-                autoclear=True,
-            )
-            # color = np.asarray(pcd.colors)
-            # for i in index_to_highlight:
-            #     color[i] = (0, 1, 0)
-            # pcd.colors = o3d.utility.Vector3dVector(color)
-            # self.current_result_point_indices.extend(index_to_highlight)
-            # self.upperScene.pcd_render(pcd)
+            self.upperScene.renderMesh(
+                mesh=highlightIndices(
+                    self.upperScene.readMesh(fpath=Path(selected_segment.data_file_name),
+                                             render=False,
+                                             autoclear=False),
+                    indices_to_highlight=selected_segment.indices),
+                autoclear=False)
 
         except ValueError as e:
             self.writeMessage(
@@ -308,7 +311,6 @@ class AtlasAnnotationAppWindow(BaseWindow):
     def destroy_bbox(self):
         for child in self.upperScene.view.children[0].children:
             if type(child) != vispy.scene.visuals.Mesh and not isinstance(child, scene.BaseCamera):
-                print(child)
                 child.parent = None
 
     def vis_bbox(self):
@@ -366,11 +368,11 @@ class AtlasAnnotationAppWindow(BaseWindow):
     def btn_boundingbox_cropped(self):
         try:
             tmp_pointcloud = o3d.geometry.PointCloud()
-            tmp_pointcloud.points = self.upperScene.mesh.vertices
-            tmp_pointcloud.colors = self.upperScene.mesh.vertex_colors
+            tmp_pointcloud.points = self.upperScene.main_mesh.vertices
+            tmp_pointcloud.colors = self.upperScene.main_mesh.vertex_colors
             bb_to_crop = self.bbox.crop_idx(tmp_pointcloud)
             new_pcd = crop_reserve(tmp_pointcloud, bb_to_crop[0].tolist())
-            self.lowerScene.render_pcd(new_pcd)
+            self.lowerScene.renderPCD(new_pcd)
             self.current_cropped_data = bb_to_crop[0].tolist()
         except Exception as e:
             print("error")

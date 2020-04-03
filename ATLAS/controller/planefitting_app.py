@@ -6,6 +6,7 @@ from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH, \
     DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, DEFAULT_STYLE_SHEET_PATH
 from ATLAS.controller.utilities.planefitting_utility_2 \
     import PlaneFittingUtil, Scene, findSegment, parseCurrSegmentText, getMeshesFromSegment
+from pathlib import Path
 
 
 class PlaneFitting(QtWidgets.QMainWindow):
@@ -31,6 +32,9 @@ class PlaneFitting(QtWidgets.QMainWindow):
 
         self.setUpCanvas()
         self.setListener()
+
+        # demo
+
 
         self.show()
 
@@ -85,6 +89,8 @@ class PlaneFitting(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
+    import sys
+
     app = QApplication(sys.argv)
     w = PlaneFitting(app=app)
     app.exec_()
