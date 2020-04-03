@@ -8,9 +8,20 @@ import vispy  # type: ignore
 from ATLAS.config import DEFAULT_STYLE_SHEET_PATH, DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, \
     DEFAULT_SEGMENTATION_FILE_PATH
 from ATLAS.controller.utilities.utility import BaseWindow
+from vispy import scene
+import warnings
+warnings.filterwarnings(action="ignore", category=FutureWarning)
 
 
 class AtlasAnnotationAppWindow(BaseWindow):
+    """
+    Class controlling the behavior of the Annotation App.
+
+    Responsible for
+    1. Listening to user actions on the GUI and invoke the respective backend functions
+    2. Maintain interaction with other screens(going back to Main menu, etc)
+    3. Must have consistent MenuBar behavior as other windows
+    """
     def __init__(self,
                  app: QApplication,
                  segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
@@ -22,6 +33,7 @@ class AtlasAnnotationAppWindow(BaseWindow):
                          UI=Ui_annotation_app,
                          style_sheet_location=style_sheet_path,
                          show=show)
+
         self.segmentation_file_path = segmentation_file_path
         self.messages = ["Program Started, UI Loaded"]  # list of strings
         self.segments: List[Segment] = []  # list of Segment objects
@@ -32,7 +44,7 @@ class AtlasAnnotationAppWindow(BaseWindow):
         self.system_mode_clicked()
 
         self.populateSegmentList()
-
+        self.setupCanvas()
 
     def setListener(self):
         self.ui.btn_floodfill_done.clicked.connect(self.btn_floodfill_done_clicked)
@@ -79,8 +91,16 @@ class AtlasAnnotationAppWindow(BaseWindow):
         self.ui.btn_boundingbox_scaling_reset.clicked.connect(self.bbox_reset_scaling)
 
     def system_mode_clicked(self):
+        """
+        Listener for on system click event
+
+        System modes supported:
+            1. floodfill
+            2. boundingbox
+        Returns:
+            None
+        """
         try:
-            # self.currentSystemMode = system_modes.get(self.ui.system_mode.currentIndex(), "UNKNOWN MODE")
             self.currentSystemMode = system_modes[self.ui.system_mode.currentIndex()]
         except KeyError as err:
             self.writeMessage("Cannot understand current system mode")
@@ -91,10 +111,14 @@ class AtlasAnnotationAppWindow(BaseWindow):
         elif self.currentSystemMode == "boundingbox":
             self.start_bbox()
         else:
-            pass
-            # self.destroy_bbox()
+            self.destroy_bbox()
 
     def setupCanvas(self):
+        """
+        Set up canvas for displaying scene
+        Returns:
+
+        """
         self.ui.data_display_window.addWidget(self.upperScene.native)
         self.ui.data_display_window.addWidget(self.lowerScene.native)
 
@@ -103,6 +127,15 @@ class AtlasAnnotationAppWindow(BaseWindow):
     """
 
     def btn_floodfill_done_clicked(self):
+        """
+        Listner for on btn_floodfill_done_clicked
+        1. If there's one point, execute floodfill
+        2. if there's two points, tell user that this is an invalid action, hit cancel to re-select
+        3. if there's three points, execute floodfill
+        4. if there's more than three points, tell user that this is an invalid action, hit cancel to re-select
+        Returns:
+            None
+        """
         if len(self.upperScene.selected_point_ids) == 1:
             print("One points detected, floodfilling")
             pcd = mesh_to_pointcloud(self.upperScene.mesh)
@@ -125,14 +158,28 @@ class AtlasAnnotationAppWindow(BaseWindow):
             self.lowerScene.render_pcd(new_pcd)
         else:
             self.writeMessage(
-                "More than 3 points chosen, not implemented this functionality yet"
+                "More than 3 points chosen, not implemented this functionality yet, please hit cancel to re-select"
             )
 
     def btn_floodfill_cancel_clicked(self):
+        """
+        listener for on btn_floodfill is clicked.
+
+        clear the mesh and the selected points field
+        clear current cropped data
+
+        Returns:
+            None
+        """
         self.upperScene.render_mesh(autoclear=True)
         self.current_cropped_data = []
 
     def btn_common_load_clicked(self):
+        """
+        Invoke select file window
+        Returns:
+            None
+        """
         filename = openFileNamesDialog(self)
         # do filetype checking here
         if filename:
@@ -232,7 +279,7 @@ class AtlasAnnotationAppWindow(BaseWindow):
             self.writeMessage("No segments read")
 
     def writeSegments(self):
-        with open(self.segmentation_file_path, mode="w") as f:
+        with open(self.segmentation_file_path.as_posix(), mode="w") as f:
             json.dump(
                 [json.loads(segment.json()) for segment in self.segments], f, indent=4
             )
@@ -260,7 +307,8 @@ class AtlasAnnotationAppWindow(BaseWindow):
 
     def destroy_bbox(self):
         for child in self.upperScene.view.children[0].children:
-            if type(child) != vispy.scene.visuals.Mesh:
+            if type(child) != vispy.scene.visuals.Mesh and not isinstance(child, scene.BaseCamera):
+                print(child)
                 child.parent = None
 
     def vis_bbox(self):
@@ -329,3 +377,11 @@ class AtlasAnnotationAppWindow(BaseWindow):
             print(e)
             self.writeMessage(str(e))
         self.writeMessage("Selected Points is cleared")
+
+
+if __name__ == "__main__":
+    import sys
+
+    app = QApplication(sys.argv)
+    w = AtlasAnnotationAppWindow(app=app)
+    app.exec_()
