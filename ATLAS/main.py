@@ -2,11 +2,10 @@ from ATLAS.controller.mainwindow_app import MainWindow
 from PyQt5.QtWidgets import QApplication
 import sys
 from ATLAS.config import ROOT, DEFAULT_DATA_LOCATION
-import os
 
-if not os.path.exists(DEFAULT_DATA_LOCATION.as_posix()):
+if not DEFAULT_DATA_LOCATION.exists():
     print("No Data folder exist, creating it at --> ", ROOT)
-    os.makedirs(DEFAULT_DATA_LOCATION.as_posix())
+    DEFAULT_DATA_LOCATION.mkdir(parents=True, exist_ok=True)
 
 app = QApplication(sys.argv)
 

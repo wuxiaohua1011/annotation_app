@@ -45,8 +45,8 @@ class BaseScene(scene.SceneCanvas):
     Responsible for all events happing inside a scene
     1. Handle mouse point click
     2. handle rendering of the scene
-    3. keep track of all point cloud, mesh that are currently being rendered
-    4. able to remove/add another mesh
+    3. keep track of all objects that are currently being rendered
+    4. able to remove/add another object to be rendered
     5. can read in a ply file and renders it
     """
 
@@ -115,13 +115,38 @@ class BaseScene(scene.SceneCanvas):
         Returns:
 
         """
-        assert child is None and ID == -1, "Cannot remove child is None and ID==-1"
+
+        assert not (child is None and ID == -1), "Cannot remove child is None and ID==-1"
+
+        # print("child = {}, id = ".format(child, ID))
         if ID != -1:
             child_in_memory = self.view_children_tracker[ID]
-            assert child is not None and child != child_in_memory, \
+            assert child is not None and child == child_in_memory, \
                 "The provided child and the child in memory refer to different things"
+            del self.view_children_tracker[ID]
+            child.parent = None  # this function might error
+        else:
+            for k, c in self.view_children_tracker.items():
+                if c == child:
+                    ID = k
+            assert ID != -1, "ID not found in self.view_children_tracker.items()"
 
-        child.parent = None # this function might error
+            child.parent = None  # this function might error
+            del self.view_children_tracker[ID]
+
+
+
+    def clear(self):
+        """
+        clears the scene, including the objects in memory
+        Returns:
+            None
+        """
+        for ID, child in self.view_children_tracker.items():
+            print("Removing child id {}, child {}".format(ID, child))
+            self.removeViewChild(child=child, ID=ID)
+        self.central_widget.remove_widget(self.view)
+        self.view = self.initView()
 
     def renderPCD(self, pcd: o3d.geometry.PointCloud, autoclear=False):
         """
@@ -145,16 +170,7 @@ class BaseScene(scene.SceneCanvas):
         )
         self.addViewChild(marker)
 
-    def clear(self):
-        """
-        clears the scene, including the objects in memory
-        Returns:
-            None
-        """
-        for id, child in self.view_children_tracker.items():
-            self.removeViewChild(ID=id)
-        self.central_widget.remove_widget(self.view)
-        self.view = self.initView()
+
 
     def readMesh(self, fpath: Path, render=False, autoclear=False) -> o3d.geometry.TriangleMesh:
         """

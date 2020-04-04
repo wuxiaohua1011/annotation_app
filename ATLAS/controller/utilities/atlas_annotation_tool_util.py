@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (  # type: ignore
 from pathlib import Path
 from ATLAS.controller.utilities.utility import BaseScene
 from typing import Union
-
+from ATLAS.config import DEFAULT_DATA_LOCATION
 system_modes = {0: "floodfill", 1: "boundingbox"}
 
 
@@ -232,7 +232,7 @@ def prompt_saving():
     return {"type_class": combo_box.currentText(), "seg_name": line_edit.text()}
 
 
-def openFileNamesDialog(env):
+def openFileNamesDialog(env, default_data_location:Path=DEFAULT_DATA_LOCATION):
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
     files, _ = QFileDialog.getOpenFileNames(
@@ -241,6 +241,7 @@ def openFileNamesDialog(env):
         "",
         "All Files (*);;Python Files (*.py)",
         options=options,
+        directory=Path.as_posix()
     )
     if files:
         return files[0]

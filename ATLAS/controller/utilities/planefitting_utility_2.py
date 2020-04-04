@@ -124,6 +124,7 @@ class PlaneFittingUtil:
         trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[6], self.normal_list[6])
         mesh.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         mesh.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
+        mesh.paint_uniform_color([1.0, 0.0, 0.0])  # paint the entire mesh red
         return mesh, list(n), d
 
     def crop_plane(self, target: Segment, planes: List[Segment]):
@@ -145,6 +146,7 @@ class PlaneFittingUtil:
                 trimesh_mesh = trimesh_mesh.slice_plane(self.pcd.points[plane.indices[0]], plane.geometry.equation[0])
         target.geometry.cad_model.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         target.geometry.cad_model.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
+        target.geometry.cad_model.paint_uniform_color([1.0, 0.0, 0.0])  # paint the entire mesh red
 
 
 def getMeshesFromSegment(segment: Segment) -> Dict[str, o3d.geometry.TriangleMesh]:
@@ -296,7 +298,7 @@ class Scene(scene.SceneCanvas):
             )  # nx3 array of ints each element is the index of point in the triangle
             # create scatter object and fill in the data
             scatter = scene.visuals.Mesh(
-                vertices=points, faces=faces, vertex_colors= mesh.vertex_colors if mesh.has_vertex_colors() else None
+                vertices=points, faces=faces, vertex_colors=mesh.vertex_colors if mesh.has_vertex_colors() else None
             )
             self.view.add(scatter)
 
