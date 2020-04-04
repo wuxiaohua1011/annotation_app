@@ -25,7 +25,7 @@ class Plane(Geometry):
 
 class Segment(BaseModel):
     id: int
-    data_file_name: str
+    data_file_name: pathlib.Path  #  TODO: change all other things
     segment_name: str
     indices: List[int]
     type: str = "Layout"

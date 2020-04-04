@@ -5,14 +5,12 @@ from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtWidgets import QApplication
 from ATLAS.config import DEFAULT_DATA_LOCATION
 from pathlib import Path
+from ATLAS.controller.utilities.utility import BaseWindow
 
 
-class DownloadToolWindow(QDialog):
+class DownloadToolWindow(BaseWindow):
     def __init__(self, app):
-        super().__init__()
-        self.app = app
-        self.ui = Ui_download_tool()
-        self.ui.setupUi(self)
+        super().__init__(app=app, UI=Ui_download_tool)
         self.files = []
         self.message = []
         self.file_to_upload = ""

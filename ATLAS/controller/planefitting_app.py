@@ -35,7 +35,6 @@ class PlaneFitting(QtWidgets.QMainWindow):
 
         # demo
 
-
         self.show()
 
     def setUpCanvas(self):
