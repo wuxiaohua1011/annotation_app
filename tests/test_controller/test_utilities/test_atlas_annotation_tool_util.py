@@ -10,7 +10,7 @@ def test_readSegment():
 
 def test_distance_traveled():
     d = [0, 1]
-    assert atlas_annotation_tool_util.distance_traveled(d) == 1
+    assert atlas_annotation_tool_util.distanceTraveled(d) == 1
 
     d = [0, -1]
-    assert atlas_annotation_tool_util.distance_traveled(d) == 1
+    assert atlas_annotation_tool_util.distanceTraveled(d) == 1
