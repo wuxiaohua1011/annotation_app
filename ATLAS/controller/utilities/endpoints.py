@@ -2,12 +2,9 @@
 A list of functionalities related to sending/receiving data from the server side
 Star Li, listar2000@berkeley.edu
 """
-import json
 import requests
 import os
-from urllib.parse import urljoin
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread
+from PyQt5.QtWidgets import QApplication  # type: ignore
 from pathlib import Path
 from ATLAS.config import DEFAULT_DATA_LOCATION
 
@@ -101,8 +98,8 @@ class Atlas_api_fetcher(object):
             resp.raise_for_status()
 
 
-# testing
-if __name__ == "__main__":
-    fetcher = Atlas_api_fetcher()
-    status = fetcher.get_file("scene0400_00_vh_clean_2.ply")
-    print(status)
+# # testing
+# if __name__ == "__main__":
+#     fetcher = Atlas_api_fetcher()
+#     status = fetcher.get_file("scene0400_00_vh_clean_2.ply")
+#     print(status)

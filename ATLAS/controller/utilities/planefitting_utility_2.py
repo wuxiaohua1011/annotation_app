@@ -1,9 +1,7 @@
-import trimesh
-
-from open3d.open3d.geometry import TriangleMesh
-
+import trimesh  # type: ignore
+from open3d.open3d.geometry import TriangleMesh  # type: ignore
 from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH
-from typing import Union, Dict
+from typing import Dict
 from ATLAS.controller.utilities.atlas_annotation_tool_util import *
 
 
@@ -18,9 +16,13 @@ class PlaneFittingUtil:
         self.orientedBoundingBox = o3d.geometry.OrientedBoundingBox.create_from_points(
             self.pcd.points
         )
-        self.box_corners = np.asarray(self.orientedBoundingBox.get_box_points())
+        self.box_corners: np.ndarray = np.asarray(
+            self.orientedBoundingBox.get_box_points()
+        )
         # print("the eight points that define the bounding box ==> \n {} \n".format(self.box_corners))
-        self.box_center = np.asanyarray(self.orientedBoundingBox.get_center())
+        self.box_center: np.ndarray = np.asanyarray(
+            self.orientedBoundingBox.get_center()
+        )
         # print("the center of the geometry coordinate ==> \n {} \n".format(self.box_center))
         # calculate norm for each face
         points = [self.box_center]
@@ -54,7 +56,15 @@ class PlaneFittingUtil:
             self.box_corners[7] - self.box_corners[1],
         )
         points.append(self.box_center + normal6)
-        self.normal_list = [None, normal1, normal2, normal3, normal4, normal5, normal6]
+        self.normal_list: List = [
+            None,
+            normal1,
+            normal2,
+            normal3,
+            normal4,
+            normal5,
+            normal6,
+        ]
         # calculate three axis
         lines = [[0, 1], [0, 3], [0, 6]]
         colors = [[0, 0, 2] for i in range(len(lines))]

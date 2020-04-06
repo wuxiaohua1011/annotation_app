@@ -3,7 +3,7 @@ Default static configuration for all applications
 """
 from pathlib import Path
 
-from appdirs import *
+from appdirs import user_data_dir  # type: ignore
 
 appname = "ATLAS"
 appauthor = "FHL VIVE"

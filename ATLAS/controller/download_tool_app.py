@@ -1,8 +1,8 @@
 import sys
 from ATLAS.view.downloadtool_ui import Ui_download_tool
 from ATLAS.controller.utilities.endpoints import Atlas_api_fetcher
-from PyQt5.QtWidgets import QDialog, QFileDialog
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QFileDialog  # type: ignore
+from PyQt5.QtWidgets import QApplication  # type: ignore
 from ATLAS.config import DEFAULT_DATA_LOCATION
 from pathlib import Path
 from ATLAS.controller.utilities.utility import BaseWindow

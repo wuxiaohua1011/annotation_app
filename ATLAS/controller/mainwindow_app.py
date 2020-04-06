@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets  # type: ignore
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication  # type: ignore
 from ATLAS.view.mainwindow_ui import Ui_MainWindow
 from ATLAS.controller.atlas_annotation_tool_app import AtlasAnnotationAppWindow
 from ATLAS.controller.download_tool_app import DownloadToolWindow

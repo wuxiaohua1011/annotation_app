@@ -1,11 +1,11 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtWidgets  # type: ignore
+from PyQt5.QtWidgets import QApplication  # type: ignore
 from ATLAS.config import DEFAULT_STYLE_SHEET_PATH
 from pathlib import Path
 from abc import abstractmethod
-from vispy import scene
-import open3d as o3d
-import numpy as np
+from vispy import scene  # type: ignore
+import open3d as o3d  # type: ignore
+import numpy as np  # type: ignore
 from typing import Dict, Any
 
 
@@ -144,7 +144,8 @@ class BaseScene(scene.SceneCanvas):
                     ID = k
             assert ID != -1, "ID not found in self.view_children_tracker.items()"
 
-            child.parent = None  # this function might error
+            if child is not None:
+                child.parent = None  # this function might error
             del self.view_children_tracker[ID]
 
     def clear(self):

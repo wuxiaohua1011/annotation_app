@@ -1,5 +1,5 @@
 from ATLAS.controller.mainwindow_app import MainWindow
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication  # type: ignore
 import sys
 from ATLAS.config import ROOT, DEFAULT_DATA_LOCATION
 

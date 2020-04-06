@@ -75,7 +75,7 @@ class AnnotationScene(BaseScene):
 
     def __init__(self, keys="interactive", size=(800, 800), point_size: float = 3.5):
         super().__init__(keys=keys, size=size, point_size=point_size)
-        self.selected_point_ids = []
+        self.selected_point_ids: List[int] = []
         self.main_mesh: o3d.geometry.TriangleMesh = o3d.geometry.TriangleMesh()
         self.current_main_file_path: Union[Path, None] = None
 
@@ -247,7 +247,7 @@ def openFileNamesDialog(env, default_data_location: Path = DEFAULT_DATA_LOCATION
         "",
         "All Files (*);;Python Files (*.py)",
         options=options,
-        directory=Path.as_posix(),
+        directory=default_data_location.as_posix(),
     )
     if files:
         return files[0]

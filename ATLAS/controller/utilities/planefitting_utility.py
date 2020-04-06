@@ -1,4 +1,4 @@
-import trimesh
+import trimesh  # type: ignore
 from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH
 from typing import Union
 from ATLAS.controller.utilities.atlas_annotation_tool_util import *
