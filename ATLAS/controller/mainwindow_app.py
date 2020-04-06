@@ -10,11 +10,15 @@ from pathlib import Path
 
 
 class MainWindow(BaseWindow):
-    def __init__(self,
-                 app: QApplication,
-                 style_sheet_location: Path = DEFAULT_STYLE_SHEET_PATH,
-                 **kwargs):
-        super().__init__(app=app, UI=Ui_MainWindow, style_sheet_location=style_sheet_location)
+    def __init__(
+        self,
+        app: QApplication,
+        style_sheet_location: Path = DEFAULT_STYLE_SHEET_PATH,
+        **kwargs
+    ):
+        super().__init__(
+            app=app, UI=Ui_MainWindow, style_sheet_location=style_sheet_location
+        )
         self.dialogs: List = list()
         self.kwargs = kwargs
 

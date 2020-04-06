@@ -5,11 +5,16 @@ from ATLAS.controller.utilities.floodfill_utility import floodfill, crop_reserve
 from ATLAS.controller.utilities.boundingbox_utility import BBOX, Line
 from ATLAS.controller.utilities.models import Segment
 import vispy  # type: ignore
-from ATLAS.config import DEFAULT_STYLE_SHEET_PATH, DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, \
-    DEFAULT_SEGMENTATION_FILE_PATH
+from ATLAS.config import (
+    DEFAULT_STYLE_SHEET_PATH,
+    DEFAULT_DATA_LOCATION,
+    DEFAULT_SCENE_FILE_PATH,
+    DEFAULT_SEGMENTATION_FILE_PATH,
+)
 from ATLAS.controller.utilities.utility import BaseWindow
 from vispy import scene
 import warnings
+
 warnings.filterwarnings(action="ignore", category=FutureWarning)
 
 
@@ -22,17 +27,21 @@ class AtlasAnnotationAppWindow(BaseWindow):
     2. Maintain interaction with other screens(going back to Main menu, etc)
     3. Must have consistent MenuBar behavior as other windows
     """
-    def __init__(self,
-                 app: QApplication,
-                 segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
-                 style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
-                 scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
-                 show: bool = True
-                 ):
-        super().__init__(app=app,
-                         UI=Ui_annotation_app,
-                         style_sheet_location=style_sheet_path,
-                         show=show)
+
+    def __init__(
+        self,
+        app: QApplication,
+        segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
+        style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
+        scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
+        show: bool = True,
+    ):
+        super().__init__(
+            app=app,
+            UI=Ui_annotation_app,
+            style_sheet_location=style_sheet_path,
+            show=show,
+        )
 
         self.segmentation_file_path = segmentation_file_path
         self.messages = ["Program Started, UI Loaded"]  # list of strings
@@ -181,7 +190,6 @@ class AtlasAnnotationAppWindow(BaseWindow):
         self.upperScene.renderMesh(mesh)
         self.current_cropped_data = []
 
-
     def btn_common_load_clicked(self):
         """
         Invoke select file window
@@ -210,8 +218,8 @@ class AtlasAnnotationAppWindow(BaseWindow):
             # assume that the state of the program should have existing segments all read in from file
             # from initializing the program.
             if (
-                    len(self.upperScene.selected_point_ids) == 0
-                    and self.currentSystemMode == 0
+                len(self.upperScene.selected_point_ids) == 0
+                and self.currentSystemMode == 0
             ):
                 self.writeMessage("There are no points to save")
             else:
@@ -245,11 +253,15 @@ class AtlasAnnotationAppWindow(BaseWindow):
             selected_segment = self.segments[current_item_index]
             self.upperScene.renderMesh(
                 mesh=highlightIndices(
-                    self.upperScene.readMesh(fpath=Path(selected_segment.data_file_name),
-                                             render=False,
-                                             autoclear=False),
-                    indices_to_highlight=selected_segment.indices),
-                autoclear=False)
+                    self.upperScene.readMesh(
+                        fpath=Path(selected_segment.data_file_name),
+                        render=False,
+                        autoclear=False,
+                    ),
+                    indices_to_highlight=selected_segment.indices,
+                ),
+                autoclear=False,
+            )
 
         except ValueError as e:
             self.writeMessage(
@@ -310,7 +322,9 @@ class AtlasAnnotationAppWindow(BaseWindow):
 
     def destroy_bbox(self):
         for child in self.upperScene.view.children[0].children:
-            if type(child) != vispy.scene.visuals.Mesh and not isinstance(child, scene.BaseCamera):
+            if type(child) != vispy.scene.visuals.Mesh and not isinstance(
+                child, scene.BaseCamera
+            ):
                 child.parent = None
 
     def vis_bbox(self):

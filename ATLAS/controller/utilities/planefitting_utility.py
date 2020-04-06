@@ -6,57 +6,84 @@ from ATLAS.controller.utilities.atlas_annotation_tool_util import *
 
 class PlaneFittingUtil:
     def __init__(self, pcd: Union[o3d.geometry.PointCloud, Path]):
-        self.pcd = o3d.io.read_point_cloud(pcd.as_posix()) if isinstance(pcd, Path) else pcd
-        self.pcd_copy = o3d.io.read_point_cloud(pcd.as_posix()) if isinstance(pcd, Path) else pcd
-        self.orientedBoundingBox = o3d.geometry.OrientedBoundingBox.create_from_points(self.pcd.points)
+        self.pcd = (
+            o3d.io.read_point_cloud(pcd.as_posix()) if isinstance(pcd, Path) else pcd
+        )
+        self.pcd_copy = (
+            o3d.io.read_point_cloud(pcd.as_posix()) if isinstance(pcd, Path) else pcd
+        )
+        self.orientedBoundingBox = o3d.geometry.OrientedBoundingBox.create_from_points(
+            self.pcd.points
+        )
         self.box_corners = np.asarray(self.orientedBoundingBox.get_box_points())
         # print("the eight points that define the bounding box ==> \n {} \n".format(self.box_corners))
         self.box_center = np.asanyarray(self.orientedBoundingBox.get_center())
         # print("the center of the geometry coordinate ==> \n {} \n".format(self.box_center))
         # calculate norm for each face
         points = [self.box_center]
-        normal1 = np.cross(self.box_corners[1] - self.box_corners[0], self.box_corners[2] - self.box_corners[0])
+        normal1 = np.cross(
+            self.box_corners[1] - self.box_corners[0],
+            self.box_corners[2] - self.box_corners[0],
+        )
         points.append(self.box_center + normal1)
-        normal4 = np.cross(self.box_corners[4] - self.box_corners[3], self.box_corners[5] - self.box_corners[3])
+        normal4 = np.cross(
+            self.box_corners[4] - self.box_corners[3],
+            self.box_corners[5] - self.box_corners[3],
+        )
         points.append(self.box_center + normal4)
-        normal2 = np.cross(self.box_corners[1] - self.box_corners[0], self.box_corners[3] - self.box_corners[0])
+        normal2 = np.cross(
+            self.box_corners[1] - self.box_corners[0],
+            self.box_corners[3] - self.box_corners[0],
+        )
         points.append(self.box_center + normal2)
-        normal5 = np.cross(self.box_corners[4] - self.box_corners[2], self.box_corners[5] - self.box_corners[2])
+        normal5 = np.cross(
+            self.box_corners[4] - self.box_corners[2],
+            self.box_corners[5] - self.box_corners[2],
+        )
         points.append(self.box_center + normal5)
-        normal3 = np.cross(self.box_corners[2] - self.box_corners[0], self.box_corners[3] - self.box_corners[0])
+        normal3 = np.cross(
+            self.box_corners[2] - self.box_corners[0],
+            self.box_corners[3] - self.box_corners[0],
+        )
         points.append(self.box_center + normal3)
-        normal6 = np.cross(self.box_corners[6] - self.box_corners[1], self.box_corners[7] - self.box_corners[1])
+        normal6 = np.cross(
+            self.box_corners[6] - self.box_corners[1],
+            self.box_corners[7] - self.box_corners[1],
+        )
         points.append(self.box_center + normal6)
         self.normal_list = [None, normal1, normal2, normal3, normal4, normal5, normal6]
         # calculate three axis
         lines = [[0, 1], [0, 3], [0, 6]]
         colors = [[0, 0, 2] for i in range(len(lines))]
         self.line_set = o3d.geometry.LineSet(
-            points=o3d.utility.Vector3dVector(points), lines=o3d.utility.Vector2iVector(lines)
+            points=o3d.utility.Vector3dVector(points),
+            lines=o3d.utility.Vector2iVector(lines),
         )
         self.line_set.colors = o3d.utility.Vector3dVector(colors)
 
     # handle json file, return a list of segment objects
     # print(data[0].keys())
     # dict_keys(['id', 'data_file_name', 'segment_name', 'indices', 'type', 'type_class', 'intersection', 'plane_equation', 'vertices'])
-    def handle_json(self, segmentation_file_location: Path = DEFAULT_SEGMENTATION_FILE_PATH):
+    def handle_json(
+        self, segmentation_file_location: Path = DEFAULT_SEGMENTATION_FILE_PATH
+    ):
         to_display = [self.orientedBoundingBox, self.pcd]
         segment_list = []
         with open(segmentation_file_location.as_posix()) as f:
             data = json.load(f)
         for seg in data:
-            surface_to_crop = seg['indices']
+            surface_to_crop = seg["indices"]
             mesh, n, d = self.crop_plane_bbox(surface_to_crop)
             data = dict(
-                id=seg['id'],
-                data_file_name=seg['data_file_name'],
-                segment_name=seg['segment_name'],
+                id=seg["id"],
+                data_file_name=seg["data_file_name"],
+                segment_name=seg["segment_name"],
                 indices=surface_to_crop,
-                type=seg['type'],
-                type_class=seg['type_class'],
+                type=seg["type"],
+                type_class=seg["type_class"],
                 intersection=[],  # b/c we are using the json file generated from old Segment class
                 geometry=Plane(cad_model=mesh, equation=(n, d)),
-                vertices=seg['vertices']
+                vertices=seg["vertices"],
             )
             segment_list.append(Segment(**data))
 
@@ -69,7 +96,9 @@ class PlaneFittingUtil:
 
     # crop a plane according to the surface_to_crop and return the mesh object and 3d points
     def crop_plane_bbox(self, surface_to_crop):
-        points = np.asarray(self.pcd_copy.points)[surface_to_crop]  # convert index to real points and index error here
+        points = np.asarray(self.pcd_copy.points)[
+            surface_to_crop
+        ]  # convert index to real points and index error here
         seg = o3d.geometry.PointCloud()
         seg.points = o3d.utility.Vector3dVector(points)
 
@@ -84,31 +113,39 @@ class PlaneFittingUtil:
         r = get_r(n)
         r = r.T
 
-        vertices = np.array([
-            [-0.5, 0.5, 0],
-            [0.5, 0.5, 0],
-            [0.5, -0.5, 0],
-            [-0.5, -0.5, 0]
-        ])
+        vertices = np.array(
+            [[-0.5, 0.5, 0], [0.5, 0.5, 0], [0.5, -0.5, 0], [-0.5, -0.5, 0]]
+        )
         vertices = np.dot(vertices, 10)
 
-        triangles = np.array([
-            [0, 1, 3],
-            [1, 2, 3]
-        ])
+        triangles = np.array([[0, 1, 3], [1, 2, 3]])
 
         vertices = [np.matmul(v, r) - np.multiply(n, d) for v in vertices]
 
         mesh = o3d.geometry.TriangleMesh()
         mesh.vertices = o3d.utility.Vector3dVector(np.asarray(vertices))
         mesh.triangles = o3d.utility.Vector3iVector(np.asarray(triangles))
-        trimesh_mesh = trimesh.Trimesh(vertices=np.asarray(mesh.vertices), faces=np.asarray(mesh.triangles))
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[0], self.normal_list[1])
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[0], - self.normal_list[2])
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[0], self.normal_list[3])
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[5], - self.normal_list[4])
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[5], self.normal_list[5])
-        trimesh_mesh = trimesh_mesh.slice_plane(self.box_corners[6], self.normal_list[6])
+        trimesh_mesh = trimesh.Trimesh(
+            vertices=np.asarray(mesh.vertices), faces=np.asarray(mesh.triangles)
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[0], self.normal_list[1]
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[0], -self.normal_list[2]
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[0], self.normal_list[3]
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[5], -self.normal_list[4]
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[5], self.normal_list[5]
+        )
+        trimesh_mesh = trimesh_mesh.slice_plane(
+            self.box_corners[6], self.normal_list[6]
+        )
         mesh.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
         mesh.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
         # to_display.append(mesh) # mesh is a CAD model, plane equation, indices of points
@@ -116,12 +153,20 @@ class PlaneFittingUtil:
 
     def crop_plane(self, to_display, target, planes):
         old_mesh = target.geometry.cad_model
-        trimesh_mesh = trimesh.Trimesh(vertices=np.asarray(old_mesh.vertices), faces=np.asarray(old_mesh.triangles))
+        trimesh_mesh = trimesh.Trimesh(
+            vertices=np.asarray(old_mesh.vertices), faces=np.asarray(old_mesh.triangles)
+        )
         for plane in planes:
             if plane != target:
-                trimesh_mesh = trimesh_mesh.slice_plane(self.pcd.points[plane.indices[0]], plane.geometry.equation[0])
-        target.geometry.cad_model.vertices = o3d.utility.Vector3dVector(np.asarray(trimesh_mesh.vertices))
-        target.geometry.cad_model.triangles = o3d.utility.Vector3iVector(np.asarray(trimesh_mesh.faces))
+                trimesh_mesh = trimesh_mesh.slice_plane(
+                    self.pcd.points[plane.indices[0]], plane.geometry.equation[0]
+                )
+        target.geometry.cad_model.vertices = o3d.utility.Vector3dVector(
+            np.asarray(trimesh_mesh.vertices)
+        )
+        target.geometry.cad_model.triangles = o3d.utility.Vector3iVector(
+            np.asarray(trimesh_mesh.faces)
+        )
         to_display.append(target.geometry.cad_model)
 
 
@@ -162,4 +207,3 @@ def hat_operator(vector):
     matrix[2, 0] = -w2
     matrix[2, 1] = w1
     return matrix
-

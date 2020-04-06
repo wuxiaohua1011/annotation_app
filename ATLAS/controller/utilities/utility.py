@@ -10,11 +10,13 @@ from typing import Dict, Any
 
 
 class BaseWindow(QtWidgets.QMainWindow):
-    def __init__(self,
-                 app: QApplication,
-                 UI,
-                 style_sheet_location: Path = DEFAULT_STYLE_SHEET_PATH,
-                 show=True):
+    def __init__(
+        self,
+        app: QApplication,
+        UI,
+        style_sheet_location: Path = DEFAULT_STYLE_SHEET_PATH,
+        show=True,
+    ):
         """
 
         Args:
@@ -28,7 +30,11 @@ class BaseWindow(QtWidgets.QMainWindow):
         try:
             self.ui.setupUi(self)
         except AttributeError as e:
-            raise AttributeError("Given UI {} does not have setupUi function. Please see documentation".format(UI))
+            raise AttributeError(
+                "Given UI {} does not have setupUi function. Please see documentation".format(
+                    UI
+                )
+            )
         self.app.setStyleSheet(open(str(style_sheet_location.as_posix())).read())
 
         self.setListener()
@@ -55,7 +61,9 @@ class BaseScene(scene.SceneCanvas):
         self.unfreeze()
         self.camera_mode = "turntable"
         self.view: scene.widgets.viewbox.ViewBox = self.initView()
-        self.view_children_tracker: Dict[int, Any] = dict()  # dictionary mapping ID to a children in view
+        self.view_children_tracker: Dict[
+            int, Any
+        ] = dict()  # dictionary mapping ID to a children in view
         self.last_children_id: int = -1  # possible to have integer overflow issue, but not likely
         self.point_size = point_size
 
@@ -72,9 +80,11 @@ class BaseScene(scene.SceneCanvas):
         """
         if autoclear:
             self.clear()
-        vis_mesh = scene.visuals.Mesh(vertices=np.asarray(mesh.vertices),
-                                      faces=np.asarray(mesh.triangles),
-                                      vertex_colors=mesh.vertex_colors)
+        vis_mesh = scene.visuals.Mesh(
+            vertices=np.asarray(mesh.vertices),
+            faces=np.asarray(mesh.triangles),
+            vertex_colors=mesh.vertex_colors,
+        )
         self.addViewChild(vis_mesh)
 
     def initView(self) -> scene.widgets.viewbox.ViewBox:
@@ -116,13 +126,16 @@ class BaseScene(scene.SceneCanvas):
 
         """
 
-        assert not (child is None and ID == -1), "Cannot remove child is None and ID==-1"
+        assert not (
+            child is None and ID == -1
+        ), "Cannot remove child is None and ID==-1"
 
         # print("child = {}, id = ".format(child, ID))
         if ID != -1:
             child_in_memory = self.view_children_tracker[ID]
-            assert child is not None and child == child_in_memory, \
-                "The provided child and the child in memory refer to different things"
+            assert (
+                child is not None and child == child_in_memory
+            ), "The provided child and the child in memory refer to different things"
             del self.view_children_tracker[ID]
             child.parent = None  # this function might error
         else:
@@ -133,8 +146,6 @@ class BaseScene(scene.SceneCanvas):
 
             child.parent = None  # this function might error
             del self.view_children_tracker[ID]
-
-
 
     def clear(self):
         """
@@ -170,9 +181,9 @@ class BaseScene(scene.SceneCanvas):
         )
         self.addViewChild(marker)
 
-
-
-    def readMesh(self, fpath: Path, render=False, autoclear=False) -> o3d.geometry.TriangleMesh:
+    def readMesh(
+        self, fpath: Path, render=False, autoclear=False
+    ) -> o3d.geometry.TriangleMesh:
         """
         read in a ply file and return the mesh, render if necessary
         Args:
@@ -188,7 +199,9 @@ class BaseScene(scene.SceneCanvas):
             self.renderMesh(mesh, autoclear=autoclear)
         return mesh
 
-    def readPCD(self, fpath:Path, render=False, autoclear=False) -> o3d.geometry.PointCloud:
+    def readPCD(
+        self, fpath: Path, render=False, autoclear=False
+    ) -> o3d.geometry.PointCloud:
         """
         read in a ply file and return the pointcloud, render if necessary
         Args:
@@ -207,4 +220,3 @@ class BaseScene(scene.SceneCanvas):
     @abstractmethod
     def on_mouse_release(self, event):
         raise NotImplementedError
-

@@ -18,7 +18,9 @@ class Ui_download_tool(object):
         self.centralwidget.setObjectName("centralwidget")
         self.io_panel = QtWidgets.QTabWidget(self.centralwidget)
         self.io_panel.setGeometry(QtCore.QRect(220, 30, 401, 531))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.io_panel.sizePolicy().hasHeightForWidth())
@@ -105,12 +107,22 @@ class Ui_download_tool(object):
         self.download_browse_btn.setText(_translate("download_tool", "Browse"))
         self.download_confirm_btn.setText(_translate("download_tool", "Download"))
         self.download_cancel_btn.setText(_translate("download_tool", "Cancel"))
-        self.io_panel.setTabText(self.io_panel.indexOf(self.Download), _translate("download_tool", "Download"))
-        self.label.setText(_translate("download_tool", "<html><head/><body><p><span style=\" font-size:18pt; font-weight:600; \">Choose a file to upload</span></p></body></html>"))
+        self.io_panel.setTabText(
+            self.io_panel.indexOf(self.Download),
+            _translate("download_tool", "Download"),
+        )
+        self.label.setText(
+            _translate(
+                "download_tool",
+                '<html><head/><body><p><span style=" font-size:18pt; font-weight:600; ">Choose a file to upload</span></p></body></html>',
+            )
+        )
         self.upload_browse_btn.setText(_translate("download_tool", "Browse"))
         self.upload_confirm_btn.setText(_translate("download_tool", "Upload"))
         self.upload_cancel_btn.setText(_translate("download_tool", "Cancel"))
-        self.io_panel.setTabText(self.io_panel.indexOf(self.Upload), _translate("download_tool", "Upload"))
+        self.io_panel.setTabText(
+            self.io_panel.indexOf(self.Upload), _translate("download_tool", "Upload")
+        )
         self.menuFile.setTitle(_translate("download_tool", "File"))
         self.menuEdit.setTitle(_translate("download_tool", "Edit"))
         self.actionOpen.setText(_translate("download_tool", "Open"))

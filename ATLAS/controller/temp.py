@@ -1,11 +1,11 @@
 class AtlasAnnotationAppWindow(QDialog):
     def __init__(
-            self,
-            app: QApplication,
-            segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
-            style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
-            scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
-            show: bool = True,
+        self,
+        app: QApplication,
+        segmentation_file_path: Path = DEFAULT_SEGMENTATION_FILE_PATH,
+        style_sheet_path: Path = DEFAULT_STYLE_SHEET_PATH,
+        scene_file_path: Path = DEFAULT_SCENE_FILE_PATH,
+        show: bool = True,
     ):
         super().__init__()
         self.app = app
@@ -161,8 +161,8 @@ class AtlasAnnotationAppWindow(QDialog):
             # assume that the state of the program should have existing segments all read in from file
             # from initializing the program.
             if (
-                    len(self.upperScene.selected_point_ids) == 0
-                    and self.currentSystemMode == 0
+                len(self.upperScene.selected_point_ids) == 0
+                and self.currentSystemMode == 0
             ):
                 self.writeMessage("There are no points to save")
             else:
@@ -337,8 +337,6 @@ class AtlasAnnotationAppWindow(QDialog):
         self.writeMessage("Selected Points is cleared")
 
 
-
-
 class Scene(scene.SceneCanvas):
     def __init__(self):
         scene.SceneCanvas.__init__(self, keys="interactive", size=(800, 800))
@@ -491,5 +489,3 @@ class Scene(scene.SceneCanvas):
         )
         line.set_gl_state("opaque", blend=False, depth_test=False)
         self.view.add(line)
-
-

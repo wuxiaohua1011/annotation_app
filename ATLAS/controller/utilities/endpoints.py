@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 from pathlib import Path
 from ATLAS.config import DEFAULT_DATA_LOCATION
+
 # temporary location for base_url (for testing purpose)
 BASE_URL = "http://rejection.ocf.berkeley.edu:5000"
 

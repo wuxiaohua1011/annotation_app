@@ -63,7 +63,9 @@ class Ui_planefitting_main_window(object):
 
     def retranslateUi(self, planefitting_main_window):
         _translate = QtCore.QCoreApplication.translate
-        planefitting_main_window.setWindowTitle(_translate("planefitting_main_window", "MainWindow"))
+        planefitting_main_window.setWindowTitle(
+            _translate("planefitting_main_window", "MainWindow")
+        )
         self.btn_undo.setText(_translate("planefitting_main_window", "Undo"))
         self.btn_clip.setText(_translate("planefitting_main_window", "Clip"))
         self.btn_done.setText(_translate("planefitting_main_window", "Done"))

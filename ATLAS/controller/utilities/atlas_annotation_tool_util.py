@@ -18,6 +18,7 @@ from pathlib import Path
 from ATLAS.controller.utilities.utility import BaseScene
 from typing import Union
 from ATLAS.config import DEFAULT_DATA_LOCATION
+
 system_modes = {0: "floodfill", 1: "boundingbox"}
 
 
@@ -44,8 +45,9 @@ def readSegmentation(filePath: Path) -> List[Segment]:
         raise e
 
 
-def highlightIndices(mesh: o3d.geometry.TriangleMesh,
-                     indices_to_highlight: List[int]) -> o3d.geometry.TriangleMesh:
+def highlightIndices(
+    mesh: o3d.geometry.TriangleMesh, indices_to_highlight: List[int]
+) -> o3d.geometry.TriangleMesh:
     """
     Given a list of indicies, render the mesh with those indices to highlight
     Args:
@@ -77,10 +79,14 @@ class AnnotationScene(BaseScene):
         self.main_mesh: o3d.geometry.TriangleMesh = o3d.geometry.TriangleMesh()
         self.current_main_file_path: Union[Path, None] = None
 
-    def readMesh(self, fpath: Path, render=False, autoclear=False) -> o3d.geometry.TriangleMesh:
+    def readMesh(
+        self, fpath: Path, render=False, autoclear=False
+    ) -> o3d.geometry.TriangleMesh:
         if self.main_mesh.is_empty():
             self.current_main_file_path = fpath
-        return super(AnnotationScene, self).readMesh(fpath=fpath, render=render, autoclear=autoclear)
+        return super(AnnotationScene, self).readMesh(
+            fpath=fpath, render=render, autoclear=autoclear
+        )
 
     def renderMesh(self, mesh: o3d.geometry.TriangleMesh, autoclear: bool = False):
         if self.main_mesh.is_empty():
@@ -159,8 +165,8 @@ class AnnotationScene(BaseScene):
 
         tmp_point = candidate_points[good_idx, 0:3]
         tmp_point = tmp_point[
-                    np.newaxis, :
-                    ]  # reshape it to fit it into marker.set_data
+            np.newaxis, :
+        ]  # reshape it to fit it into marker.set_data
 
         marker = scene.visuals.Markers()
         marker.set_gl_state("opaque", blend=False, depth_test=False)
@@ -232,7 +238,7 @@ def prompt_saving():
     return {"type_class": combo_box.currentText(), "seg_name": line_edit.text()}
 
 
-def openFileNamesDialog(env, default_data_location:Path=DEFAULT_DATA_LOCATION):
+def openFileNamesDialog(env, default_data_location: Path = DEFAULT_DATA_LOCATION):
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
     files, _ = QFileDialog.getOpenFileNames(
@@ -241,7 +247,7 @@ def openFileNamesDialog(env, default_data_location:Path=DEFAULT_DATA_LOCATION):
         "",
         "All Files (*);;Python Files (*.py)",
         options=options,
-        directory=Path.as_posix()
+        directory=Path.as_posix(),
     )
     if files:
         return files[0]

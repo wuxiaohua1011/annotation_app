@@ -2,16 +2,24 @@ from PyQt5 import QtWidgets  # type: ignore
 from PyQt5.QtWidgets import QApplication, QListWidgetItem  # type: ignore
 from ATLAS.view.planefitting_ui import Ui_planefitting_main_window
 from PyQt5 import QtCore
-from ATLAS.config import DEFAULT_SEGMENTATION_FILE_PATH, \
-    DEFAULT_DATA_LOCATION, DEFAULT_SCENE_FILE_PATH, DEFAULT_STYLE_SHEET_PATH
-from ATLAS.controller.utilities.planefitting_utility_2 \
-    import PlaneFittingUtil, Scene, findSegment, parseCurrSegmentText, getMeshesFromSegment
+from ATLAS.config import (
+    DEFAULT_SEGMENTATION_FILE_PATH,
+    DEFAULT_DATA_LOCATION,
+    DEFAULT_SCENE_FILE_PATH,
+    DEFAULT_STYLE_SHEET_PATH,
+)
+from ATLAS.controller.utilities.planefitting_utility_2 import (
+    PlaneFittingUtil,
+    Scene,
+    findSegment,
+    parseCurrSegmentText,
+    getMeshesFromSegment,
+)
 from pathlib import Path
 
 
 class PlaneFitting(QtWidgets.QMainWindow):
-    def __init__(self,
-                 app: QApplication, **kwargs):
+    def __init__(self, app: QApplication, **kwargs):
         super().__init__()
         self.app = app
         self.ui = Ui_planefitting_main_window()
@@ -21,12 +29,17 @@ class PlaneFitting(QtWidgets.QMainWindow):
         else:
             self.app.setStyleSheet(open(DEFAULT_STYLE_SHEET_PATH.as_posix()).read())
         self.kwargs = kwargs
-        self.scene_file_path: Path = kwargs.get("scene_file_path", DEFAULT_SCENE_FILE_PATH)
-        self.segmentation_file_path = kwargs.get("segmentation_file_path", DEFAULT_SEGMENTATION_FILE_PATH)
+        self.scene_file_path: Path = kwargs.get(
+            "scene_file_path", DEFAULT_SCENE_FILE_PATH
+        )
+        self.segmentation_file_path = kwargs.get(
+            "segmentation_file_path", DEFAULT_SEGMENTATION_FILE_PATH
+        )
         self.scene = Scene()
         self.plane_fitting_util = PlaneFittingUtil(pcd=DEFAULT_SCENE_FILE_PATH)
-        self.segments, self.oriented_boundingbox, self.pcd = \
-            self.plane_fitting_util.auto_clip_segments(segments=self.segmentation_file_path)
+        self.segments, self.oriented_boundingbox, self.pcd = self.plane_fitting_util.auto_clip_segments(
+            segments=self.segmentation_file_path
+        )
         self.populateCurrSegmentDropDown()
         self.populateSegmentList()
 
@@ -43,7 +56,9 @@ class PlaneFitting(QtWidgets.QMainWindow):
         self.onCurrSegmentDropdownTextChanged(curr_text)
 
     def setListener(self):
-        self.ui.curr_segment_dropdown.currentTextChanged.connect(self.onCurrSegmentDropdownTextChanged)
+        self.ui.curr_segment_dropdown.currentTextChanged.connect(
+            self.onCurrSegmentDropdownTextChanged
+        )
 
     def onCurrSegmentDropdownTextChanged(self, value):
         ID, name = parseCurrSegmentText(value)
@@ -59,7 +74,9 @@ class PlaneFitting(QtWidgets.QMainWindow):
     def populateCurrSegmentDropDown(self):
         self.ui.curr_segment_dropdown.clear()
         for seg in self.segments:
-            self.ui.curr_segment_dropdown.addItem("{} | {} ".format(seg.id, seg.segment_name))
+            self.ui.curr_segment_dropdown.addItem(
+                "{} | {} ".format(seg.id, seg.segment_name)
+            )
 
     def populateSegmentList(self):
         self.ui.segment_list.clear()

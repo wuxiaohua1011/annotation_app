@@ -9,7 +9,5 @@ if not DEFAULT_DATA_LOCATION.exists():
 
 app = QApplication(sys.argv)
 
-w = MainWindow(
-    app
-)
+w = MainWindow(app)
 app.exec_()
